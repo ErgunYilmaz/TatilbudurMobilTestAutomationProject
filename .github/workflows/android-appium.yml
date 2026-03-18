@@ -44,6 +44,7 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
           script: |
             adb devices
+            adb install -r Apps/tb.apk
             mvn --no-transfer-progress clean test
 
       - name: Upload Allure Results
