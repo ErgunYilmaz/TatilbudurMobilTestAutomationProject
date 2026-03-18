@@ -1,6 +1,8 @@
 name: Android Appium Tests
 
 on:
+  push:
+    branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
@@ -35,20 +37,28 @@ jobs:
       - name: Run Android Emulator and Tests
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
-          api-level: 29
+          api-level: 30
           target: google_apis
-          arch: x86_64
-          profile: pixel_4
-          disable-animations: true
-          emulator-options: -no-snapshot -no-window -gpu host -noaudio -no-boot-anim
+          arch: x86
+          profile: Nexus 6
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: |
+            adb wait-for-device
             adb devices
-            adb install -r Apps/tb.apk
             mvn --no-transfer-progress clean test
 
-      - name: Upload Appium Log
+      - name: Upload Allure Results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: appium-log
-          path: appium.log
+          name: allure-results
+          path: target/allure-results
+
+      - name: Upload Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs
+          path: |
+            target/surefire-reports
+            appium.log
