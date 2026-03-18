@@ -1,16 +1,16 @@
-name: Android Appium Scheduled Tests
+name: Android Appium Tests
 
 on:
+  push:
+    branches: [ "main" ]
   workflow_dispatch:
-  schedule:
-    - cron: "0 22 * * *"
 
 jobs:
   appium-test:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Java
@@ -19,27 +19,35 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Set up Node
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '18'
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
 
       - name: Install Appium
-        run: npm install -g appium
+        run: |
+          npm install -g appium@next
+          appium driver install uiautomator2
 
       - name: Start Appium
         run: |
-          appium > appium.log 2>&1 &
-          sleep 15
+          appium --base-path /wd/hub > appium.log 2>&1 &
+          sleep 10
 
       - name: Run Android Emulator and Tests
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
-          api-level: 29
+          api-level: 30
           target: google_apis
           arch: x86_64
           profile: pixel_4
-          emulator-options: -no-window -no-snapshot -gpu swiftshader_indirect
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
           script: |
             adb devices
             mvn clean test
