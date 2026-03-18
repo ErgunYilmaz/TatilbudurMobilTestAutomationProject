@@ -36,8 +36,9 @@ allure-results/
 allure-report/
 
 # App binaries
-Apps/*.apk
-*.apk
+# Apps/*.apk
+# *.apk
+
 
 # Local config / secrets
 configuration.properties
