@@ -37,24 +37,11 @@ jobs:
       - name: Run Android Emulator and Tests
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
-          api-level: 29
+          api-level: 30
           arch: x86
-          profile: pixel_4
+          profile: Nexus 6
           emulator-options: -no-window -no-snapshot -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: |
-            adb devices
-            adb wait-for-device
-
-            echo "Emulator boot bekleniyor..."
-            boot_completed=""
-            until [[ "$boot_completed" == "1" ]]; do
-              boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
-              sleep 5
-            done
-
-            echo "Emulator hazır"
-            adb shell input keyevent 82
-
             mvn clean test
 
       - name: Upload Allure Results
