@@ -34,7 +34,7 @@ public class Driver {
                     options.setPlatformVersion("11.0");
 
                     // APK'yı doğrudan projeden yükle
-                    String appPath = System.getProperty("user.dir") + "/Apps/v82.apk";
+                    String appPath = System.getProperty("user.dir") + "/Apps/tb.apk";
                     options.setApp(appPath);
 
                 } else {
