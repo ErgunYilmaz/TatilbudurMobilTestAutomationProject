@@ -29,26 +29,19 @@ public class Driver {
                 boolean isGitHubActions = "true".equalsIgnoreCase(System.getenv("GITHUB_ACTIONS"));
 
                 if (isGitHubActions) {
-                    // CI ortamında emulator bilgileri
                     options.setDeviceName("Android Emulator");
                     options.setPlatformVersion("11.0");
 
-                    // APK'yı doğrudan projeden yükle
+                    // APK'yı direkt projeden al
                     String appPath = System.getProperty("user.dir") + "/Apps/tb.apk";
                     options.setApp(appPath);
 
                 } else {
-                    // Lokal ortam
                     options.setDeviceName("Pixel 4 H");
                     options.setPlatformVersion("10.0");
 
-                    // Uygulama cihazda/emulatorde kuruluysa package/activity ile aç
                     options.setAppPackage("com.mikatur.tatilbudur");
                     options.setAppActivity("com.mikatur.tatilbudur.MainActivity");
-
-                    // İstersen bunu da kullanabilirsin:
-                    // String appPath = System.getProperty("user.dir") + "/Apps/v82.apk";
-                    // options.setApp(appPath);
                 }
 
                 if (ConfigReader.getProperty("platformName").equalsIgnoreCase("Android")) {
