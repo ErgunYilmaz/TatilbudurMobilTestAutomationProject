@@ -50,7 +50,9 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
           script: |
             adb devices
-            mvn clean test
+            adb install -r Apps/v82.apk
+            adb shell pm list packages | grep mikatur || true
+            mvn --no-transfer-progress clean test
 
       - name: Upload Allure Results
         if: always()
