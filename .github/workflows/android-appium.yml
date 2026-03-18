@@ -1,31 +1,33 @@
-name: Android Appium Scheduled Tests
+name: Android Appium Tests
 
 on:
+  push:
+    branches: [ "main" ]
   workflow_dispatch:
-  schedule:
-    - cron: "0 22 * * *"
 
 jobs:
   appium-test:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          distribution: temurin
+          distribution: 'temurin'
           java-version: '17'
 
-      - name: Set up Node
+      - name: Install Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '18'
 
       - name: Install Appium
-        run: npm install -g appium
+        run: |
+          npm install -g appium
+          appium driver install uiautomator2
 
       - name: Start Appium
         run: |
@@ -36,12 +38,13 @@ jobs:
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
           api-level: 29
-          target: google_apis
-          arch: x86_64
+          arch: x86
           profile: pixel_4
-          emulator-options: -no-window -no-snapshot -gpu swiftshader_indirect
+          emulator-options: -no-window -no-snapshot -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: |
             adb devices
+            adb wait-for-device
+            adb shell input keyevent 82
             mvn clean test
 
       - name: Upload Allure Results
@@ -58,7 +61,7 @@ jobs:
           name: surefire-reports
           path: target/surefire-reports
 
-      - name: Upload Appium Log
+      - name: Upload Appium Logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
