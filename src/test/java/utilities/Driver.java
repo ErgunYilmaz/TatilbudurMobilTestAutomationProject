@@ -1,50 +1,73 @@
 package utilities;
+
 import io.appium.java_client.android.AndroidDriver;
 import io.appium.java_client.android.options.UiAutomator2Options;
 import io.appium.java_client.ios.IOSDriver;
+
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 public class Driver {
+
     private static AndroidDriver appiumDriver;
     private static IOSDriver iosDriver;
-    public static AndroidDriver getAndroidDriver()  {
-        URL appiumServerURL = null;
-        try {
-            appiumServerURL = new URL("http://127.0.0.1:4723/"); //bu kısımda /wd/hub kısmona appium 2.0 da gerek yok.
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
+
+    public static AndroidDriver getAndroidDriver() {
         if (appiumDriver == null) {
-            UiAutomator2Options options=new UiAutomator2Options();
-            options.
-                    setDeviceName("Pixel 4 H")
-                    .setPlatformName("Android")
-                    .setPlatformVersion("10.0")
-                   // setDeviceName("Redmi Note 13")
-                   // .setPlatformName("Android")
-                   // .setPlatformVersion("15.0")
-                    .setAutomationName("UiAutomator2")
-                   //.setApp("C:\\Users\\ergun.yilmaz\\IdeaProjects\\TatilbudurMobilProject\\Apps\\v82.apk")
-                    .setAppPackage("com.mikatur.tatilbudur")
-                    .setAppActivity("com.mikatur.tatilbudur.MainActivity")
-                    .setNoReset(false);
-            options.setCapability("disableIdLocatorAutocompletion", true);
-            if (ConfigReader.getProperty("platformName").equals("Android")) {
-                assert appiumServerURL != null;
-                appiumDriver = new AndroidDriver(appiumServerURL,options);
-                appiumDriver.manage().timeouts().implicitlyWait(15, TimeUnit.SECONDS);
-            }else {
-                assert appiumServerURL != null;
-                iosDriver = new IOSDriver(appiumServerURL,options);
-                iosDriver.manage().timeouts().implicitlyWait(15, TimeUnit.SECONDS);
-                throw new UnsupportedOperationException("Cihaz IOS");
+            try {
+                URL appiumServerURL = new URL("http://127.0.0.1:4723");
+
+                UiAutomator2Options options = new UiAutomator2Options();
+                options.setAutomationName("UiAutomator2");
+                options.setPlatformName("Android");
+                options.setNoReset(false);
+                options.setAutoGrantPermissions(true);
+                options.setNewCommandTimeout(Duration.ofSeconds(300));
+                options.setCapability("disableIdLocatorAutocompletion", true);
+
+                boolean isGitHubActions = "true".equalsIgnoreCase(System.getenv("GITHUB_ACTIONS"));
+
+                if (isGitHubActions) {
+                    // CI ortamında emulator bilgileri
+                    options.setDeviceName("Android Emulator");
+                    options.setPlatformVersion("11.0");
+
+                    // APK'yı doğrudan projeden yükle
+                    String appPath = System.getProperty("user.dir") + "/Apps/v82.apk";
+                    options.setApp(appPath);
+
+                } else {
+                    // Lokal ortam
+                    options.setDeviceName("Pixel 4 H");
+                    options.setPlatformVersion("10.0");
+
+                    // Uygulama cihazda/emulatorde kuruluysa package/activity ile aç
+                    options.setAppPackage("com.mikatur.tatilbudur");
+                    options.setAppActivity("com.mikatur.tatilbudur.MainActivity");
+
+                    // İstersen bunu da kullanabilirsin:
+                    // String appPath = System.getProperty("user.dir") + "/Apps/v82.apk";
+                    // options.setApp(appPath);
+                }
+
+                if (ConfigReader.getProperty("platformName").equalsIgnoreCase("Android")) {
+                    appiumDriver = new AndroidDriver(appiumServerURL, options);
+                    appiumDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(20));
+                } else {
+                    iosDriver = new IOSDriver(appiumServerURL, options);
+                    iosDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(20));
+                    throw new UnsupportedOperationException("Cihaz IOS");
+                }
+
+            } catch (MalformedURLException e) {
+                throw new RuntimeException("Appium server URL hatalı: " + e.getMessage(), e);
             }
         }
         return appiumDriver;
     }
-    public static void quitAppiumDriver(){
+
+    public static void quitAppiumDriver() {
         if (appiumDriver != null) {
             appiumDriver.quit();
             appiumDriver = null;
