@@ -26,41 +26,29 @@ jobs:
 
       - name: Install Appium
         run: |
-          npm install -g appium@next
+          npm install -g appium@2
           appium driver install uiautomator2
 
       - name: Start Appium
         run: |
           appium > appium.log 2>&1 &
-          sleep 15
+          sleep 10
 
-      - name: Run Android Emulator and Tests
+      - name: Run Emulator and Tests
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
           api-level: 30
-          arch: x86
-          profile: Nexus 6
-          emulator-options: -no-window -no-snapshot -gpu swiftshader_indirect -noaudio -no-boot-anim
-          script: |
-            mvn clean test
+          arch: x86_64
+          target: google_apis
+          profile: pixel
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          script: mvn clean test
 
-      - name: Upload Allure Results
+      - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results
-          path: target/allure-results
-
-      - name: Upload Surefire Reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: surefire-reports
-          path: target/surefire-reports
-
-      - name: Upload Appium Log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: appium-log
-          path: appium.log
+          name: logs
+          path: |
+            target/
+            appium.log
