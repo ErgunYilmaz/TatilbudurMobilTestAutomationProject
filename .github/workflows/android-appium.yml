@@ -16,7 +16,7 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
 
       - name: Install Node.js
@@ -44,7 +44,17 @@ jobs:
           script: |
             adb devices
             adb wait-for-device
+
+            echo "Emulator boot bekleniyor..."
+            boot_completed=""
+            until [[ "$boot_completed" == "1" ]]; do
+              boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
+              sleep 5
+            done
+
+            echo "Emulator hazır"
             adb shell input keyevent 82
+
             mvn clean test
 
       - name: Upload Allure Results
@@ -61,7 +71,7 @@ jobs:
           name: surefire-reports
           path: target/surefire-reports
 
-      - name: Upload Appium Logs
+      - name: Upload Appium Log
         if: always()
         uses: actions/upload-artifact@v4
         with:
