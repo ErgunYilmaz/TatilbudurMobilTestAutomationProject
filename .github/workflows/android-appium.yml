@@ -1,52 +1,73 @@
 name: Android Appium Tests
+
 on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
-  appium-test:
-    runs-on: macos-13
+  test:
+    runs-on: macos-latest
+
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Java
+      - name: Java kur
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
-          cache: 'maven'
 
-      - name: Set up Node.js
+      - name: Node kur
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '18'
 
-      - name: Install Appium & Driver
+      - name: Appium kur
         run: |
-          npm install -g appium
+          npm install -g appium@next
           appium driver install uiautomator2
 
-      - name: Run Android Emulator and Tests
-        uses: reactivecircus/android-emulator-runner@v2
+      - name: Appium başlat
+        run: |
+          appium > appium.log 2>&1 &
+          sleep 20
+
+      - name: Emulator + Test
+        uses: ReactiveCircus/android-emulator-runner@v2
         with:
           api-level: 30
           target: google_apis
-          arch: x86_64
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          arch: x86
+          profile: Nexus 6
           disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
           script: |
-            appium --log appium.log & 
-            sleep 15
-            mvn clean test
+            echo "DEVICE BEKLENİYOR..."
+            adb wait-for-device
 
-      - name: Upload Artifacts
+            echo "BOOT BEKLENİYOR..."
+            adb shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 2; done;'
+
+            echo "DEVICE LIST"
+            adb devices
+
+            echo "TEST BAŞLIYOR"
+            mvn -B clean test
+
+      - name: Allure sonuçlarını yükle
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: allure-results
+          path: target/allure-results
+
+      - name: Logları yükle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs
           path: |
+            target/surefire-reports
             appium.log
-            target/surefire-reports/
