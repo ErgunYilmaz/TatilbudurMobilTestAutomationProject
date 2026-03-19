@@ -1,20 +1,14 @@
-name: Android Appium Regression Tests
-
+name: Android Appium Tests
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
     branches: [ "main" ]
   workflow_dispatch:
 
 jobs:
   appium-test:
-    # Kritik Düzeltme: Sadece 'macos-13' yazıyoruz. 
-    # 'us-default' gibi ekler GitHub tarafından desteklenmez.
     runs-on: macos-13
-
     steps:
-      - name: Checkout Code
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Java
@@ -41,31 +35,18 @@ jobs:
           target: google_apis
           arch: x86_64
           force-avd-creation: false
-          # Emülatörün arka planda sorunsuz çalışması için gerekli parametreler
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: |
-            # Appium sunucusunu arka planda başlatıyoruz
             appium --log appium.log & 
-            
-            # Sunucunun tamamen ayağa kalkması için kısa bir süre bekleyelim
-            sleep 10 
-            
-            # Maven testlerini başlatıyoruz
+            sleep 15
             mvn clean test
 
-      - name: Upload Allure Results
+      - name: Upload Artifacts
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results
-          path: target/allure-results
-
-      - name: Upload Logs & Screenshots
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-output-logs
+          name: test-results
           path: |
             appium.log
             target/surefire-reports/
