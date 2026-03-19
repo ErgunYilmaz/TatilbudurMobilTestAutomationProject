@@ -51,7 +51,20 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
           script: |
             adb devices
-            mvn -B --no-transfer-progress clean test
+
+            echo "Video kaydı başlatılıyor"
+            adb shell screenrecord /sdcard/test.mp4 &
+            sleep 2
+
+            echo "Test başlıyor"
+            mvn -B --no-transfer-progress clean test || true
+
+            echo "Video kaydı durduruluyor"
+            adb shell pkill -l INT screenrecord || true
+            sleep 2
+
+            echo "Video alınıyor"
+            adb pull /sdcard/test.mp4 || true
 
       - name: Allure sonuçlarını yükle
         if: always()
@@ -68,3 +81,10 @@ jobs:
           path: |
             target/surefire-reports
             appium.log
+
+      - name: Video yükle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: emulator-video
+          path: test.mp4
