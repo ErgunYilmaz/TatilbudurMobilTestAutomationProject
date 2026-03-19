@@ -6,37 +6,41 @@ on:
   workflow_dispatch:
 
 jobs:
-  appium-test:
-    runs-on: macos-latest # Emülatör performansı için macos tercih edilmeli
+  test:
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Java
+      - name: Java kur
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: temurin
           java-version: '17'
-          cache: 'maven'
 
-      - name: Set up Node.js
+      - name: Node kur
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '18'
 
-      - name: Install Appium & Driver
+      - name: KVM enable
         run: |
-          npm install -g appium
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Appium kur
+        run: |
+          npm install -g appium@next
           appium driver install uiautomator2
 
-      - name: Start Appium Server
+      - name: Appium başlat
         run: |
-          # Appium 2.x varsayılan olarak /wd/hub kullanmaz, direkt kök dizinden çalışır
-          appium --log appium.log &
-          sleep 10
+          appium > appium.log 2>&1 &
+          sleep 15
 
-      - name: Run Android Emulator and Tests
+      - name: Emulator + Test
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
           api-level: 30
@@ -44,23 +48,23 @@ jobs:
           arch: x86_64
           profile: pixel_4
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
           script: |
-            adb wait-for-device
-            mvn clean test
+            adb devices
+            mvn -B --no-transfer-progress clean test
 
-      - name: Upload Allure Results
+      - name: Allure sonuçlarını yükle
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-results
           path: target/allure-results
 
-      - name: Upload Logs & Screenshots
+      - name: Logları yükle
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-logs
+          name: logs
           path: |
-            appium.log
             target/surefire-reports
+            appium.log
