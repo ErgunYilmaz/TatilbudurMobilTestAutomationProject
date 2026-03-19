@@ -7,7 +7,7 @@ on:
 
 jobs:
   appium-test:
-    runs-on: macos-latest # Emülatör performansı için macos tercih edilmeli
+    runs-on: macos-13  # Intel tabanlı emülatör performansı için ideal
 
     steps:
       - name: Checkout code
@@ -30,39 +30,15 @@ jobs:
           npm install -g appium
           appium driver install uiautomator2
 
-      - name: Start Appium Server
-        run: |
-          # Appium 2.x varsayılan olarak /wd/hub kullanmaz, direkt kök dizinden çalışır
-          appium --log appium.log &
-          sleep 10
-
-     jobs:
-     appium-test:
-     runs-on: macos-13  # macos-latest (ARM) yerine macos-13 (Intel) kullanıyoruz
-    
-    steps:
-      # ... diğer adımlar aynı ...
-      
       - name: Run Android Emulator and Tests
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
           api-level: 30
           target: google_apis
-          arch: x86_64  # Intel işlemcide x86_64 kullanmalısın
-          # ... geri kalan ayarlar aynı
-
-      - name: Upload Allure Results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-results
-          path: target/allure-results
-
-      - name: Upload Logs & Screenshots
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-logs
-          path: |
-            appium.log
-            target/surefire-reports
+          arch: x86_64
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: |
+            appium --log appium.log & 
+            mvn clean test
