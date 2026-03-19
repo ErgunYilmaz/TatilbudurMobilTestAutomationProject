@@ -5,11 +5,12 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
-  workflow_dispatch: # Manuel tetikleme için
+  workflow_dispatch:
 
 jobs:
   appium-test:
-    # Emülatör performansı için Intel tabanlı macOS-13 en stabil seçenektir
+    # Kritik Düzeltme: Sadece 'macos-13' yazıyoruz. 
+    # 'us-default' gibi ekler GitHub tarafından desteklenmez.
     runs-on: macos-13
 
     steps:
@@ -28,7 +29,7 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Appium & UIAutomator2
+      - name: Install Appium & Driver
         run: |
           npm install -g appium
           appium driver install uiautomator2
@@ -40,17 +41,17 @@ jobs:
           target: google_apis
           arch: x86_64
           force-avd-creation: false
-          # Emülatörü hızlı ve ekransız (headless) başlatmak için ayarlar:
+          # Emülatörün arka planda sorunsuz çalışması için gerekli parametreler
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: |
-            # Appium sunucusunu arka planda başlat
+            # Appium sunucusunu arka planda başlatıyoruz
             appium --log appium.log & 
             
-            # Sunucunun hazır olması için kısa bir bekleme
+            # Sunucunun tamamen ayağa kalkması için kısa bir süre bekleyelim
             sleep 10 
             
-            # Maven testlerini koştur
+            # Maven testlerini başlatıyoruz
             mvn clean test
 
       - name: Upload Allure Results
