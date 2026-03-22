@@ -255,47 +255,6 @@ public class ReusableMethods {
         }
     }
 
-    // ================= YENİ METODLAR =================
-
-    public static boolean varsaTikla(By locator, int timeoutSeconds) {
-        try {
-            logger.info("Element varsa tıklanacak: {}", locator);
-            WebDriverWait wait = new WebDriverWait(Driver.getAndroidDriver(), Duration.ofSeconds(timeoutSeconds));
-            WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
-            element.click();
-            logger.info("Element bulundu ve tıklandı: {}", locator);
-            return true;
-        } catch (Exception e) {
-            logger.info("Element görünmedi, geçiliyor: {}", locator);
-            return false;
-        }
-    }
-
-    public static boolean varsaGorunurMu(By locator, int timeoutSeconds) {
-        try {
-            logger.info("Element görünür mü kontrol ediliyor: {}", locator);
-            WebDriverWait wait = new WebDriverWait(Driver.getAndroidDriver(), Duration.ofSeconds(timeoutSeconds));
-            wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-            return true;
-        } catch (Exception e) {
-            logger.info("Element görünmedi: {}", locator);
-            return false;
-        }
-    }
-
-    public static void bekleTiklanabilir(By locator) {
-        try {
-            logger.info("Elementin tıklanabilir olması bekleniyor: {}", locator);
-            WebDriverWait wait = new WebDriverWait(Driver.getAndroidDriver(), Duration.ofSeconds(15));
-            WebElement element = wait.until(ExpectedConditions.elementToBeClickable(locator));
-            element.click();
-            logger.info("Elemente başarıyla tıklandı: {}", locator);
-        } catch (Exception e) {
-            logger.error("Element tıklama işlemi sırasında hata oluştu: {}", e.getMessage(), e);
-            throw new RuntimeException("Element tıklama başarısız: " + e.getMessage());
-        }
-    }
-
     public static void bekleTiklanabilir(WebElement element) {
         try {
             logger.info("Elementin görünür olması bekleniyor: {}", element);
