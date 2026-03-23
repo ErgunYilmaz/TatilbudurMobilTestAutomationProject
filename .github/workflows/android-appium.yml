@@ -173,13 +173,10 @@ jobs:
           subject: "Tatilbudur Mobil Test Raporu"
           to: |
             ergun.yilmaz@tatilbudur.com,
-            letafet.erol@tatilbudur.com,
-            erhan.isler@tatilbudur.com,
-            huseyin.eraslan@tatilbudur.com
           from: "Test Automation <${{ secrets.EMAIL_USERNAME }}>"
           html_body: |
             <h2>Tatilbudur Mobil Test Çıktıları</h2>
-            <p><b>Allure Raporu:</b><br>
+            <p><b>Test Raporu:</b><br>
             <a href="https://ergunyilmaz.github.io/TatilbudurMobilTestAutomationProject/">
             Raporu Aç</a></p>
 
