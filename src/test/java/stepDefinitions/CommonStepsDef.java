@@ -20,5 +20,6 @@ public class CommonStepsDef {
     public void uygulamanin_acildigi_kontrol_edilir_ve_gerekli_izinler_verilir() {
         Driver.getAndroidDriver();
         reusableMethods.bekleTiklanabilir(tatilbudurPage.registerLabel);
+
     }
 }
