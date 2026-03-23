@@ -1,242 +1,89 @@
-name: Android Appium Tests
+name: Android Test Automation
 
 on:
-  push:
-    branches: [ "main" ]
   workflow_dispatch:
-
-permissions:
-  contents: write
-
-env:
-  PAGES_BASE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Java kur
+      # APK DOWNLOAD
+      - name: Download APK from Release
+        run: |
+          curl -L -o app.apk https://github.com/ErgunYilmaz/TatilbudurMobilTestAutomationProject/releases/download/apk-v1/tb.apk
+
+      # JAVA
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: 17
 
-      - name: Node kur
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
-      - name: KVM enable
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-
-      - name: Appium ve Allure kur
-        run: |
-          npm install -g appium@next
-          appium driver install uiautomator2
-          npm install -g allure-commandline
-
-      - name: Appium başlat
-        run: |
-          appium > appium.log 2>&1 &
-          sleep 15
-
-      - name: Emulator + Test + Video
-        uses: ReactiveCircus/android-emulator-runner@v2
+      # ANDROID + EMULATOR (FAST)
+      - name: Start Emulator
+        uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 30
-          target: google_apis
           arch: x86_64
-          profile: pixel_4
-          disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
+          profile: Nexus 6
+          emulator-options: >
+            -no-window
+            -no-audio
+            -no-boot-anim
+            -gpu swiftshader_indirect
           script: |
-            set -x
-            adb devices
+            adb wait-for-device
+            adb install app.apk
+            mvn clean test
 
-            adb shell rm -f /sdcard/test.mp4 || true
-            rm -f ./test.mp4 || true
+      # ALLURE REPORT
+      - name: Generate Allure Report
+        run: mvn allure:report
 
-            echo "Video kaydı başlatılıyor"
-            adb shell screenrecord /sdcard/test.mp4 > /dev/null 2>&1 &
-            sleep 3
-
-            echo "Test başlıyor"
-            mvn -B --no-transfer-progress clean test || true
-
-            echo "Video kaydı durduruluyor"
-            adb shell pkill -INT screenrecord || true
-            sleep 5
-
-            echo "Cihazda video kontrol"
-            adb shell ls -l /sdcard/test.mp4 || true
-
-            echo "Video workspace'e alınıyor"
-            adb pull /sdcard/test.mp4 ./test.mp4 || true
-
-            echo "Workspace kontrol"
-            pwd
-            ls -lah
-            [ -f ./test.mp4 ] && echo "VIDEO_OK" || echo "VIDEO_YOK"
-
-            echo "Target kontrol"
-            ls -lah target || true
-            echo "Allure results kontrol"
-            ls -lah target/allure-results || true
-
-      - name: Allure report oluştur
-        id: allure_report
-        if: always()
+      # VIDEO HTML
+      - name: Prepare Video Page
         run: |
-          if [ -d "target/allure-results" ] && [ "$(ls -A target/allure-results 2>/dev/null)" ]; then
-            mkdir -p target/allure-report
-            allure generate target/allure-results --clean -o target/allure-report
-            echo "report_ready=true" >> $GITHUB_OUTPUT
-          else
-            echo "report_ready=false" >> $GITHUB_OUTPUT
-            echo "Allure sonuçları yok, rapor üretilmedi."
+          mkdir -p public
+          cp -r target/allure-report/* public/
+          
+          echo "<html><body><h2>Test Video</h2><video width='800' controls><source src='video.mp4' type='video/mp4'></video></body></html>" > public/video.html
+          
+          if [ -f target/*.mp4 ]; then
+            cp target/*.mp4 public/video.mp4
           fi
 
-      - name: Koşu linklerini hazırla
-        id: run_links
-        if: always() && steps.allure_report.outputs.report_ready == 'true'
-        run: |
-          RUN_FOLDER="runs/run-${GITHUB_RUN_NUMBER}-attempt-${GITHUB_RUN_ATTEMPT}"
-          REPORT_URL="${PAGES_BASE_URL}/${RUN_FOLDER}/"
-          VIDEO_URL="${PAGES_BASE_URL}/${RUN_FOLDER}/video.html"
-
-          echo "run_folder=${RUN_FOLDER}" >> $GITHUB_OUTPUT
-          echo "report_url=${REPORT_URL}" >> $GITHUB_OUTPUT
-          echo "video_url=${VIDEO_URL}" >> $GITHUB_OUTPUT
-
-      - name: Publish klasörünü hazırla
-        if: always() && steps.allure_report.outputs.report_ready == 'true'
-        run: |
-          mkdir -p "public/${{ steps.run_links.outputs.run_folder }}"
-          cp -R target/allure-report/* "public/${{ steps.run_links.outputs.run_folder }}/"
-
-          mkdir -p "public/${{ steps.run_links.outputs.run_folder }}/video"
-          if [ -f "./test.mp4" ]; then
-            cp ./test.mp4 "public/${{ steps.run_links.outputs.run_folder }}/video/test.mp4"
-          fi
-
-          cat > "public/${{ steps.run_links.outputs.run_folder }}/video.html" << 'EOF'
-          <!DOCTYPE html>
-          <html lang="tr">
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Test Videosu</title>
-          </head>
-          <body>
-            <h2>Test Videosu</h2>
-            <video width="900" controls>
-              <source src="./video/test.mp4" type="video/mp4">
-            </video>
-          </body>
-          </html>
-          EOF
-
-          cat > public/index.html << EOF
-          <!DOCTYPE html>
-          <html lang="tr">
-          <head>
-            <meta charset="UTF-8">
-            <meta http-equiv="refresh" content="0; url=${{ steps.run_links.outputs.report_url }}">
-            <title>Yönlendiriliyor...</title>
-          </head>
-          <body>
-            <p>Son rapora yönlendiriliyorsunuz:
-            <a href="${{ steps.run_links.outputs.report_url }}">Raporu Aç</a></p>
-          </body>
-          </html>
-          EOF
-
-          touch public/.nojekyll
-
-      - name: Publish klasörünü kontrol et
-        if: always() && steps.allure_report.outputs.report_ready == 'true'
-        run: |
-          find public -maxdepth 4 -type f | sort || true
-
-      - name: Allure sonuçlarını yükle
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-results
-          path: target/allure-results
-          if-no-files-found: warn
-
-      - name: Allure raporunu yükle
-        if: always() && steps.allure_report.outputs.report_ready == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report
-          path: target/allure-report
-          if-no-files-found: warn
-
-      - name: Logları yükle
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: logs
-          path: |
-            target/surefire-reports
-            appium.log
-          if-no-files-found: warn
-
-      - name: Video yükle
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: emulator-video
-          path: ./test.mp4
-          if-no-files-found: warn
-
-      - name: GitHub Pages'e yayınla
-        if: always() && steps.allure_report.outputs.report_ready == 'true'
-        uses: peaceiris/actions-gh-pages@v3
+      # GITHUB PAGES
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
           publish_dir: ./public
-          keep_files: true
 
-      - name: Test sonucu mail gönder
-        if: always() && steps.allure_report.outputs.report_ready == 'true'
+      # MAIL
+      - name: Send Email
         uses: dawidd6/action-send-mail@v3
         with:
           server_address: smtp.gmail.com
           server_port: 465
-          secure: true
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: "Tatilbudur Mobil Test Raporu - Run #${{ github.run_number }}"
+          subject: "Test Raporu"
           to: |
             ergun.yilmaz@tatilbudur.com,
             letafet.erol@tatilbudur.com,
-            bahar.yildiz@tatilbudur.com
-            huseyin.eraslan@tatilbudur.com
-            
-          from: "Test Automation <${{ secrets.EMAIL_USERNAME }}>"
-          html_body: |
-            <h2>Tatilbudur Mobil Test Çıktıları</h2>
+            erhan.isler@tatiludur.com,
+            bahar.yildiz@tatilbudur.com,            
+            hüseyin.eraslan@tatilbudur.com
+          from: "Test Automation"
+          body: |
+            Test tamamlandı.
 
-            <p><b>Koşu Numarası:</b> #${{ github.run_number }}</p>
-            <p><b>Branch:</b> ${{ github.ref_name }}</p>
+            Rapor:
+            https://ergunyilmaz.github.io/TatilbudurMobilTestAutomationProject/
 
-            <p><b>Allure Raporu:</b><br>
-            <a href="${{ steps.run_links.outputs.report_url }}">
-            Raporu Aç</a></p>
-
-            <p><b>Test Videosu:</b><br>
-            <a href="${{ steps.run_links.outputs.video_url }}">
-            Videoyu Aç</a></p>
-
-            <p>Bu e-posta GitHub Actions tarafından otomatik gönderilmiştir.</p>
+            Video:
+            https://ergunyilmaz.github.io/TatilbudurMobilTestAutomationProject/video.html
