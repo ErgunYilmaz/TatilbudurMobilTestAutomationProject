@@ -7,8 +7,6 @@ on:
 
 permissions:
   contents: write
-  pages: write
-  id-token: write
 
 jobs:
   test:
@@ -80,9 +78,13 @@ jobs:
             adb pull /sdcard/test.mp4 ./test.mp4 || true
 
             echo "Workspace kontrol"
+            pwd
             ls -lah
             [ -f ./test.mp4 ] && echo "VIDEO_OK" || echo "VIDEO_YOK"
+
+            echo "Target kontrol"
             ls -lah target || true
+            echo "Allure results kontrol"
             ls -lah target/allure-results || true
 
       - name: Allure report oluştur
@@ -96,36 +98,24 @@ jobs:
             echo "<html><body><h1>Allure sonuçları bulunamadı</h1><p>target/allure-results klasörü boş veya oluşmadı.</p></body></html>" > target/allure-report/index.html
           fi
 
-      - name: Pages klasörünü hazırla
+      - name: Videoyu report içine koy
         if: always()
         run: |
-          mkdir -p public
-          cp -R target/allure-report/* public/ || true
-          touch public/.nojekyll
-
+          mkdir -p target/allure-report/video
           if [ -f "./test.mp4" ]; then
-            cp ./test.mp4 public/test.mp4
+            cp ./test.mp4 target/allure-report/video/test.mp4
           fi
 
-          cat > public/links.html << 'EOF'
-          <!DOCTYPE html>
-          <html lang="tr">
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Tatilbudur Test Raporu</title>
-            <style>
-              body { font-family: Arial, sans-serif; margin: 40px; }
-              a { display: block; margin: 12px 0; font-size: 18px; }
-            </style>
-          </head>
-          <body>
-            <h1>Tatilbudur Mobil Test Çıktıları</h1>
-            <a href="./index.html">Allure Raporunu Aç</a>
-            <a href="./test.mp4">Test Videosunu Aç</a>
-          </body>
-          </html>
-          EOF
+      - name: Video sayfası oluştur
+        if: always()
+        run: |
+          echo '<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Test Videosu</title></head><body><h2>Test Videosu</h2><video width="900" controls><source src="./video/test.mp4" type="video/mp4"></video></body></html>' > target/allure-report/video.html
+
+      - name: GitHub Pages için .nojekyll oluştur
+        if: always()
+        run: |
+          mkdir -p target/allure-report
+          touch target/allure-report/.nojekyll
 
       - name: Allure sonuçlarını yükle
         if: always()
@@ -167,4 +157,4 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: ./public
+          publish_dir: ./target/allure-report
