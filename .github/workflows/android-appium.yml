@@ -5,9 +5,6 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -27,24 +24,17 @@ jobs:
         with:
           node-version: '18'
 
-      - name: KVM enable
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-
-      - name: Appium ve Allure kur
+      - name: Appium kur
         run: |
           npm install -g appium@next
           appium driver install uiautomator2
-          npm install -g allure-commandline
 
       - name: Appium başlat
         run: |
           appium > appium.log 2>&1 &
           sleep 15
 
-      - name: Emulator + Test + Video
+      - name: Emulator + Test
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
           api-level: 30
@@ -54,107 +44,75 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
           script: |
-            set -x
             adb devices
 
-            adb shell rm -f /sdcard/test.mp4 || true
-            rm -f ./test.mp4 || true
-
             echo "Video kaydı başlatılıyor"
-            adb shell screenrecord /sdcard/test.mp4 > /dev/null 2>&1 &
-            sleep 3
+            adb shell screenrecord /sdcard/test.mp4 &
+            sleep 2
 
             echo "Test başlıyor"
             mvn -B --no-transfer-progress clean test || true
 
             echo "Video kaydı durduruluyor"
-            adb shell pkill -INT screenrecord || true
-            sleep 5
+            adb shell pkill -l INT screenrecord || true
+            sleep 2
 
-            echo "Cihazda video kontrol"
-            adb shell ls -l /sdcard/test.mp4 || true
-
-            echo "Video workspace'e alınıyor"
-            adb pull /sdcard/test.mp4 ./test.mp4 || true
-
-            echo "Workspace kontrol"
-            pwd
-            ls -lah
-            [ -f ./test.mp4 ] && echo "VIDEO_OK" || echo "VIDEO_YOK"
-
-            echo "Target kontrol"
-            ls -lah target || true
-            echo "Allure results kontrol"
-            ls -lah target/allure-results || true
+            echo "Video alınıyor"
+            adb pull /sdcard/test.mp4 || true
 
       - name: Allure report oluştur
         if: always()
         run: |
-          mkdir -p target/allure-report
-
-          if [ -d "target/allure-results" ] && [ "$(ls -A target/allure-results 2>/dev/null)" ]; then
-            allure generate target/allure-results --clean -o target/allure-report
-          else
-            echo "<html><body><h1>Allure sonuçları bulunamadı</h1><p>target/allure-results klasörü boş veya oluşmadı.</p></body></html>" > target/allure-report/index.html
-          fi
-
-      - name: Videoyu report içine koy
-        if: always()
-        run: |
-          mkdir -p target/allure-report/video
-          if [ -f "./test.mp4" ]; then
-            cp ./test.mp4 target/allure-report/video/test.mp4
-          fi
+          npm install -g allure-commandline --save-dev
+          allure generate target/allure-results --clean -o target/allure-report
 
       - name: Video sayfası oluştur
         if: always()
         run: |
-          echo '<!DOCTYPE html><html lang="tr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Test Videosu</title></head><body><h2>Test Videosu</h2><video width="900" controls><source src="./video/test.mp4" type="video/mp4"></video></body></html>' > target/allure-report/video.html
+          mkdir -p target/allure-report
+          cp test.mp4 target/allure-report/ || true
+          echo "<html><body><h2>Test Videosu</h2><video width='800' controls><source src='test.mp4' type='video/mp4'></video></body></html>" > target/allure-report/video.html
 
-      - name: GitHub Pages için .nojekyll oluştur
+      - name: GitHub Pages için hazırla
         if: always()
         run: |
-          mkdir -p target/allure-report
           touch target/allure-report/.nojekyll
 
-      - name: Allure sonuçlarını yükle
+      - name: Pages artifact yükle
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: allure-results
-          path: target/allure-results
-          if-no-files-found: warn
-
-      - name: Allure raporunu yükle
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-report
           path: target/allure-report
-          if-no-files-found: warn
 
-      - name: Logları yükle
+      - name: GitHub Pages'e deploy et
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: logs
-          path: |
-            target/surefire-reports
-            appium.log
-          if-no-files-found: warn
+        uses: actions/deploy-pages@v4
 
-      - name: Video yükle
+      - name: Mail gönder
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: dawidd6/action-send-mail@v3
         with:
-          name: emulator-video
-          path: ./test.mp4
-          if-no-files-found: warn
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "Tatilbudur Mobil Test Raporu"
+          to: |
+            ergun.yilmaz@tatilbudur.com,
+            letafet.erol@tatilbudur.com,
+            erhan.isler@tatilbudur.com,
+            huseyin.eraslan@tatilbudur.com
+          from: "Test Automation <${{ secrets.EMAIL_USERNAME }}>"
+          html_body: |
+            <h2>Test Sonuçları</h2>
 
-      - name: GitHub Pages'e yayınla
-        if: always()
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: ./target/allure-report
+            <p><b>Allure Rapor:</b><br>
+            <a href="https://ergunyilmaz.github.io/TatilbudurMobilTestAutomationProject/">
+            Raporu Aç</a></p>
+
+            <p><b>Test Videosu:</b><br>
+            <a href="https://ergunyilmaz.github.io/TatilbudurMobilTestAutomationProject/video.html">
+            Videoyu Aç</a></p>
+
+            <p>Bu mail otomatik gönderildi.</p>
