@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   test:
@@ -44,7 +46,7 @@ jobs:
           appium > appium.log 2>&1 &
           sleep 15
 
-      - name: Emulator + Test
+      - name: Emulator + Test + Video
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
           api-level: 30
@@ -54,11 +56,15 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -no-snapshot
           script: |
+            set -x
             adb devices
 
+            adb shell rm -f /sdcard/test.mp4 || true
+            rm -f ./test.mp4 || true
+
             echo "Video kaydı başlatılıyor"
-            adb shell "screenrecord /sdcard/test.mp4" &
-            sleep 2
+            adb shell screenrecord /sdcard/test.mp4 > /dev/null 2>&1 &
+            sleep 3
 
             echo "Test başlıyor"
             mvn -B --no-transfer-progress clean test || true
@@ -67,14 +73,16 @@ jobs:
             adb shell pkill -INT screenrecord || true
             sleep 5
 
+            echo "Cihazda video kontrol"
+            adb shell ls -l /sdcard/test.mp4 || true
+
             echo "Video workspace'e alınıyor"
             adb pull /sdcard/test.mp4 ./test.mp4 || true
 
-            echo "Workspace dosya listesi"
+            echo "Workspace kontrol"
             ls -lah
-            echo "Target dosya listesi"
+            [ -f ./test.mp4 ] && echo "VIDEO_OK" || echo "VIDEO_YOK"
             ls -lah target || true
-            echo "Allure results listesi"
             ls -lah target/allure-results || true
 
       - name: Allure report oluştur
@@ -88,11 +96,36 @@ jobs:
             echo "<html><body><h1>Allure sonuçları bulunamadı</h1><p>target/allure-results klasörü boş veya oluşmadı.</p></body></html>" > target/allure-report/index.html
           fi
 
-      - name: GitHub Pages için .nojekyll oluştur
+      - name: Pages klasörünü hazırla
         if: always()
         run: |
-          mkdir -p target/allure-report
-          touch target/allure-report/.nojekyll
+          mkdir -p public
+          cp -R target/allure-report/* public/ || true
+          touch public/.nojekyll
+
+          if [ -f "./test.mp4" ]; then
+            cp ./test.mp4 public/test.mp4
+          fi
+
+          cat > public/links.html << 'EOF'
+          <!DOCTYPE html>
+          <html lang="tr">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Tatilbudur Test Raporu</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 40px; }
+              a { display: block; margin: 12px 0; font-size: 18px; }
+            </style>
+          </head>
+          <body>
+            <h1>Tatilbudur Mobil Test Çıktıları</h1>
+            <a href="./index.html">Allure Raporunu Aç</a>
+            <a href="./test.mp4">Test Videosunu Aç</a>
+          </body>
+          </html>
+          EOF
 
       - name: Allure sonuçlarını yükle
         if: always()
@@ -128,10 +161,10 @@ jobs:
           path: ./test.mp4
           if-no-files-found: warn
 
-      - name: Allure raporunu GitHub Pages'e yayınla
+      - name: GitHub Pages'e yayınla
         if: always()
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: ./target/allure-report
+          publish_dir: ./public
