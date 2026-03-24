@@ -51,7 +51,7 @@ public class ReusableMethods {
 
         logger.info("Hedef tarih: {} {}", gun, hedefAyYil);
 
-        int maxScroll = 40;
+        int maxScroll = 4;
         int scrollCount = 0;
 
         while (scrollCount < maxScroll) {
