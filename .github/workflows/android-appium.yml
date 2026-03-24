@@ -86,6 +86,7 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: |
             set -x
+
             FINAL_EXIT=0
             FIRST_EXIT=0
             RERUN_EXIT=0
@@ -105,10 +106,13 @@ jobs:
             echo "İlk koşu başlıyor"
             mvn -B --no-transfer-progress -Dtest=Runner clean test || FIRST_EXIT=$?
 
+            echo "İlk koşu exit code: $FIRST_EXIT"
+
             if [ -f target/rerun.txt ] && [ -s target/rerun.txt ]; then
               echo "Failed senaryolar bulundu, rerun başlıyor"
               cat target/rerun.txt
               mvn -B --no-transfer-progress -Dtest=Runner -Dcucumber.features=@target/rerun.txt -DrerunMode=true test || RERUN_EXIT=$?
+              echo "Rerun exit code: $RERUN_EXIT"
               FINAL_EXIT=$RERUN_EXIT
             else
               echo "Rerun gerektiren failed senaryo yok"
@@ -266,14 +270,14 @@ jobs:
           to: |
             ergun.yilmaz@tatilbudur.com,
             turkunay.bas@tatilbudur.com
-
+            
           from: "Test Automation <${{ secrets.EMAIL_USERNAME }}>"
           html_body: |
             <h2>Tatilbudur Mobil Test Çıktıları</h2>
             <p><b>Koşu Numarası:</b> #${{ github.run_number }}</p>
             <p><b>Branch:</b> ${{ github.ref_name }}</p>
 
-            <p><b>Test Raporu:</b><br>
+            <p><b>Allure Raporu:</b><br>
             <a href="${{ steps.run_links.outputs.report_url }}">Raporu Aç</a></p>
 
             <p><b>Test Videosu:</b><br>
