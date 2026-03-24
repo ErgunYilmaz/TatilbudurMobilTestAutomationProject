@@ -17,6 +17,7 @@ public class AllureHooks {
             byte[] screenshot = ReusableMethods.getScreenshot(Driver.getAndroidDriver());
             Allure.addAttachment("Failed Screenshot", new ByteArrayInputStream(screenshot));
         }
+
         Driver.quitAppiumDriver();
     }
 }
