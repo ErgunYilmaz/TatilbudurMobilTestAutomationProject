@@ -16,6 +16,8 @@
         <cucumber.version>7.11.2</cucumber.version>
         <allure.version>2.24.0</allure.version>
         <surefire.version>2.22.2</surefire.version>
+
+        <rerun.count>0</rerun.count>
     </properties>
 
     <dependencies>
@@ -30,7 +32,6 @@
             <version>2.20.0</version>
         </dependency>
 
-        <!-- Maven için pom.xml -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -42,7 +43,6 @@
             <version>2.0.7</version>
         </dependency>
 
-        <!-- Cucumber -->
         <dependency>
             <groupId>io.cucumber</groupId>
             <artifactId>cucumber-java</artifactId>
@@ -55,21 +55,18 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Selenium -->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
             <version>4.10.0</version>
         </dependency>
 
-        <!-- Appium -->
         <dependency>
             <groupId>io.appium</groupId>
             <artifactId>java-client</artifactId>
             <version>8.5.1</version>
         </dependency>
 
-        <!-- JUnit -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -77,9 +74,6 @@
             <scope>test</scope>
         </dependency>
 
-
-
-        <!-- Allure Cucumber 7 JVM integration -->
         <dependency>
             <groupId>io.qameta.allure</groupId>
             <artifactId>allure-cucumber7-jvm</artifactId>
@@ -89,7 +83,6 @@
 
     <build>
         <plugins>
-            <!-- Surefire Plugin (Testleri çalıştırmak için) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -99,12 +92,12 @@
                         <include>**/Runner*.java</include>
                     </includes>
 
-                    <!-- Allure sonuçları için sistem özelliği -->
+                    <rerunFailingTestsCount>${rerun.count}</rerunFailingTestsCount>
+
                     <systemPropertyVariables>
                         <allure.results.directory>target/allure-results</allure.results.directory>
                     </systemPropertyVariables>
 
-                    <!-- encoding belirtmek bazen şart olabilir -->
                     <argLine>-Dfile.encoding=UTF-8</argLine>
                 </configuration>
             </plugin>
