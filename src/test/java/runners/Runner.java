@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
                 "rerun:target/rerun.txt"
         },
         features = "src/test/resources/Features",
-        glue = {"stepDefinitions", "utilities", "hooks"},
+        glue = {"stepDefinitions","utilities","hooks"},
         tags = "@Rezervasyon",
         dryRun = false
 )
