@@ -90,7 +90,7 @@ jobs:
             FIRST_EXIT=0
             RERUN_EXIT=0
             FINAL_EXIT=0
-
+  
             adb devices
             adb wait-for-device
             adb shell getprop sys.boot_completed || true
