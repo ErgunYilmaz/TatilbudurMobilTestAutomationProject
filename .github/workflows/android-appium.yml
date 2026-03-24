@@ -90,7 +90,7 @@ jobs:
             FIRST_EXIT=0
             RERUN_EXIT=0
             FINAL_EXIT=0
-  
+
             adb devices
             adb wait-for-device
             adb shell getprop sys.boot_completed || true
@@ -130,9 +130,11 @@ jobs:
             adb pull /sdcard/test.mp4 ./test.mp4 || true
 
             echo "Workspace kontrolleri"
-            ls -lh ./test.mp4 || true
+            pwd
+            ls -lah
             ls -lah target || true
             ls -lah target/allure-results || true
+            ls -lh ./test.mp4 || true
             cat target/rerun.txt || true
 
             exit $FINAL_EXIT
@@ -266,19 +268,15 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "Tatilbudur Mobil Test Raporu - Run #${{ github.run_number }}"
           to: |
-            ergun.yilmaz@tatilbudur.com,
-            turkunay.bas@tatilbudur.com
+            ergun.yilmaz@tatilbudur.com
 
           from: "Test Automation <${{ secrets.EMAIL_USERNAME }}>"
           html_body: |
             <h2>Tatilbudur Mobil Test Çıktıları</h2>
             <p><b>Koşu Numarası:</b> #${{ github.run_number }}</p>
             <p><b>Branch:</b> ${{ github.ref_name }}</p>
-
             <p><b>Allure Raporu:</b><br>
             <a href="${{ steps.run_links.outputs.report_url }}">Raporu Aç</a></p>
-
             <p><b>Test Videosu:</b><br>
             <a href="${{ steps.run_links.outputs.video_url }}">Videoyu Aç</a></p>
-
             <p>Bu e-posta GitHub Actions tarafından otomatik gönderilmiştir.</p>
