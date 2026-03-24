@@ -4,12 +4,13 @@ on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * *"
 
 permissions:
   contents: write
 
 env:
-  REPO_NAME: TatilbudurMobilTestAutomationProject
   APK_RELEASE_TAG: apk-v1
   APK_ASSET_NAME: tb.apk
   PAGES_BASE_URL: https://${{ github.repository_owner }}.github.io/TatilbudurMobilTestAutomationProject
@@ -26,12 +27,12 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '17'
+          java-version: "17"
 
       - name: Node kur
         uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Maven cache
         uses: actions/cache@v4
@@ -48,6 +49,8 @@ jobs:
             ~/.android/avd/*
             ~/.android/adb*
           key: avd-${{ runner.os }}-api30
+          restore-keys: |
+            avd-${{ runner.os }}-api30
 
       - name: KVM enable
         run: |
@@ -95,7 +98,7 @@ jobs:
             sleep 3
 
             echo "Test başlıyor"
-            mvn -B --no-transfer-progress clean test || true
+            mvn -B --no-transfer-progress clean test -Drerun.count=1 || true
 
             echo "Video kaydı durduruluyor"
             adb shell pkill -INT screenrecord || true
