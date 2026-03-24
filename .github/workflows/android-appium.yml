@@ -2,10 +2,9 @@ name: Android Appium Tests
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   workflow_dispatch:
-  schedule:
-    - cron: "0 4 * * *"
 
 permissions:
   contents: write
@@ -21,7 +20,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Java kur
         uses: actions/setup-java@v4
@@ -30,7 +29,7 @@ jobs:
           java-version: "17"
 
       - name: Node kur
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v4
         with:
           node-version: "20"
 
@@ -100,8 +99,8 @@ jobs:
             rm -f target/rerun.txt || true
 
             echo "Video kaydı başlatılıyor"
-            adb shell "screenrecord /sdcard/test.mp4 --time-limit 180" > /dev/null 2>&1 &
-            sleep 3
+            adb shell screenrecord /sdcard/test.mp4 --time-limit 180 &
+            sleep 5
 
             echo "İlk koşu başlıyor"
             mvn -B --no-transfer-progress -Dtest=Runner clean test || FIRST_EXIT=$?
@@ -120,21 +119,21 @@ jobs:
             fi
 
             echo "Video kaydı durduruluyor"
-            adb shell pkill -2 screenrecord || true
-            sleep 8
+            adb shell pkill -INT screenrecord || true
+            sleep 10
 
             echo "Cihazdaki video bilgisi"
             adb shell ls -lh /sdcard/test.mp4 || true
 
-            echo "Video workspace'e alınıyor"
+            echo "Video çekiliyor"
             adb pull /sdcard/test.mp4 ./test.mp4 || true
 
-            echo "Workspace kontrolleri"
-            pwd
-            ls -lah
-            ls -lah target || true
-            ls -lah target/allure-results || true
+            echo "Workspace video bilgisi"
             ls -lh ./test.mp4 || true
+            file ./test.mp4 || true
+
+            echo "Allure kontrol"
+            ls -lah target/allure-results || true
             cat target/rerun.txt || true
 
             exit $FINAL_EXIT
@@ -209,11 +208,6 @@ jobs:
 
           touch public/.nojekyll
 
-      - name: Publish klasörünü kontrol et
-        if: always() && steps.allure_report.outputs.report_ready == 'true'
-        run: |
-          find public -maxdepth 4 -type f | sort || true
-
       - name: Allure sonuçlarını yükle
         if: always()
         uses: actions/upload-artifact@v4
@@ -268,8 +262,9 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "Tatilbudur Mobil Test Raporu - Run #${{ github.run_number }}"
           to: |
-            ergun.yilmaz@tatilbudur.com
-
+            ergun.yilmaz@tatilbudur.com,
+            turkunay.bas@tatilbudur.com
+            
           from: "Test Automation <${{ secrets.EMAIL_USERNAME }}>"
           html_body: |
             <h2>Tatilbudur Mobil Test Çıktıları</h2>
