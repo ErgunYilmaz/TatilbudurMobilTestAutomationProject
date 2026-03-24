@@ -8,14 +8,14 @@ import org.junit.runner.RunWith;
 @CucumberOptions(
         plugin = {
                 "pretty",
-                "html:target/cucumber-reports/regression.html",   // klasik HTML raporu
-                "io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm" // Allure entegrasyonu
+                "html:target/cucumber-reports/regression.html",
+                "io.qameta.allure.cucumber7jvm.AllureCucumber7Jvm",
+                "rerun:target/rerun.txt"
         },
         features = "src/test/resources/Features",
-        glue = {"stepDefinitions","utilities","hooks"},
+        glue = {"stepDefinitions", "utilities", "hooks"},
         tags = "@Rezervasyon",
         dryRun = false
 )
 public class Runner {
-
 }

@@ -86,32 +86,54 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: |
             set -x
+            FINAL_EXIT=0
+            FIRST_EXIT=0
+            RERUN_EXIT=0
+
             adb devices
             adb wait-for-device
             adb shell getprop sys.boot_completed || true
 
             adb shell rm -f /sdcard/test.mp4 || true
             rm -f ./test.mp4 || true
+            rm -f target/rerun.txt || true
 
             echo "Video kaydı başlatılıyor"
-            adb shell screenrecord /sdcard/test.mp4 > /dev/null 2>&1 &
+            adb shell "screenrecord /sdcard/test.mp4 --time-limit 180" > /dev/null 2>&1 &
             sleep 3
 
-            echo "Test başlıyor"
-            mvn -B --no-transfer-progress clean test -Drerun.count=1 || true
+            echo "İlk koşu başlıyor"
+            mvn -B --no-transfer-progress -Dtest=Runner clean test || FIRST_EXIT=$?
+
+            if [ -f target/rerun.txt ] && [ -s target/rerun.txt ]; then
+              echo "Failed senaryolar bulundu, rerun başlıyor"
+              cat target/rerun.txt
+              mvn -B --no-transfer-progress -Dtest=Runner -Dcucumber.features=@target/rerun.txt -DrerunMode=true test || RERUN_EXIT=$?
+              FINAL_EXIT=$RERUN_EXIT
+            else
+              echo "Rerun gerektiren failed senaryo yok"
+              FINAL_EXIT=$FIRST_EXIT
+            fi
 
             echo "Video kaydı durduruluyor"
-            adb shell pkill -INT screenrecord || true
-            sleep 5
+            adb shell pkill -2 screenrecord || true
+            sleep 8
+
+            echo "Cihazdaki video bilgisi"
+            adb shell ls -lh /sdcard/test.mp4 || true
 
             echo "Video workspace'e alınıyor"
             adb pull /sdcard/test.mp4 ./test.mp4 || true
 
-            echo "Kontroller"
+            echo "Workspace kontrolleri"
             pwd
             ls -lah
             ls -lah target || true
             ls -lah target/allure-results || true
+            ls -lh ./test.mp4 || true
+            cat target/rerun.txt || true
+
+            exit $FINAL_EXIT
 
       - name: Allure report oluştur
         id: allure_report
@@ -243,16 +265,15 @@ jobs:
           subject: "Tatilbudur Mobil Test Raporu - Run #${{ github.run_number }}"
           to: |
             ergun.yilmaz@tatilbudur.com,
-            letafet.erol@tatilbudur.com,
-            erhan.isler@tatilbudur.com,
-            huseyin.eraslan@tatilbudur.com
+            turkunay.bas@tatilbudur.com
+
           from: "Test Automation <${{ secrets.EMAIL_USERNAME }}>"
           html_body: |
             <h2>Tatilbudur Mobil Test Çıktıları</h2>
             <p><b>Koşu Numarası:</b> #${{ github.run_number }}</p>
             <p><b>Branch:</b> ${{ github.ref_name }}</p>
 
-            <p><b>Allure Raporu:</b><br>
+            <p><b>Test Raporu:</b><br>
             <a href="${{ steps.run_links.outputs.report_url }}">Raporu Aç</a></p>
 
             <p><b>Test Videosu:</b><br>
