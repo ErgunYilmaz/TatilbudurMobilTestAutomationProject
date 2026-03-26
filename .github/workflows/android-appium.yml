@@ -4,13 +4,12 @@ on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
-  schedule:
-    - cron: "0 4 * * *"
 
 permissions:
   contents: write
 
 env:
+  REPO_NAME: TatilbudurMobilTestAutomationProject
   APK_RELEASE_TAG: apk-v1
   APK_ASSET_NAME: tb.apk
   PAGES_BASE_URL: https://${{ github.repository_owner }}.github.io/TatilbudurMobilTestAutomationProject
@@ -27,12 +26,12 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: '17'
 
       - name: Node kur
         uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          node-version: '20'
 
       - name: Maven cache
         uses: actions/cache@v4
@@ -41,7 +40,6 @@ jobs:
           key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             maven-${{ runner.os }}-
-
       - name: AVD cache
         uses: actions/cache@v4
         with:
@@ -49,32 +47,26 @@ jobs:
             ~/.android/avd/*
             ~/.android/adb*
           key: avd-${{ runner.os }}-api30
-          restore-keys: |
-            avd-${{ runner.os }}-api30
 
       - name: KVM enable
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
-
       - name: APK indir
         run: |
           mkdir -p Apps
           curl -fL -o Apps/tb.apk "https://github.com/${{ github.repository }}/releases/download/${{ env.APK_RELEASE_TAG }}/${{ env.APK_ASSET_NAME }}"
           ls -lah Apps
-
       - name: Appium ve Allure kur
         run: |
           npm install -g appium@next
           appium driver install uiautomator2
           npm install -g allure-commandline
-
       - name: Appium başlat
         run: |
           appium > appium.log 2>&1 &
           sleep 15
-
       - name: Emulator + Test + Video
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
@@ -86,59 +78,26 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: |
             set -x
-
-            FIRST_EXIT=0
-            RERUN_EXIT=0
-            FINAL_EXIT=0
-
             adb devices
             adb wait-for-device
             adb shell getprop sys.boot_completed || true
-
             adb shell rm -f /sdcard/test.mp4 || true
             rm -f ./test.mp4 || true
-            rm -f target/rerun.txt || true
-
             echo "Video kaydı başlatılıyor"
-            adb shell "screenrecord /sdcard/test.mp4 --time-limit 180" > /dev/null 2>&1 &
+            adb shell screenrecord /sdcard/test.mp4 > /dev/null 2>&1 &
             sleep 3
-
-            echo "İlk koşu başlıyor"
-            mvn -B --no-transfer-progress -Dtest=Runner clean test || FIRST_EXIT=$?
-
-            echo "İlk koşu exit code: $FIRST_EXIT"
-
-            if [ -f target/rerun.txt ] && [ -s target/rerun.txt ]; then
-              echo "Failed senaryolar bulundu, rerun başlıyor"
-              cat target/rerun.txt
-              mvn -B --no-transfer-progress -Dtest=Runner -Dcucumber.features=@target/rerun.txt test || RERUN_EXIT=$?
-              echo "Rerun exit code: $RERUN_EXIT"
-              FINAL_EXIT=$RERUN_EXIT
-            else
-              echo "Rerun gerektiren failed senaryo yok"
-              FINAL_EXIT=$FIRST_EXIT
-            fi
-
+            echo "Test başlıyor"
+            mvn -B --no-transfer-progress clean test || true
             echo "Video kaydı durduruluyor"
-            adb shell pkill -2 screenrecord || true
-            sleep 8
-
-            echo "Cihazdaki video bilgisi"
-            adb shell ls -lh /sdcard/test.mp4 || true
-
+            adb shell pkill -INT screenrecord || true
+            sleep 5
             echo "Video workspace'e alınıyor"
             adb pull /sdcard/test.mp4 ./test.mp4 || true
-
-            echo "Workspace kontrolleri"
+            echo "Kontroller"
             pwd
             ls -lah
             ls -lah target || true
             ls -lah target/allure-results || true
-            ls -lh ./test.mp4 || true
-            cat target/rerun.txt || true
-
-            exit $FINAL_EXIT
-
       - name: Allure report oluştur
         id: allure_report
         if: always()
@@ -151,7 +110,6 @@ jobs:
             echo "report_ready=false" >> $GITHUB_OUTPUT
             echo "Allure sonuçları yok, rapor üretilmedi."
           fi
-
       - name: Koşu linklerini hazırla
         id: run_links
         if: always() && steps.allure_report.outputs.report_ready == 'true'
@@ -159,22 +117,18 @@ jobs:
           RUN_FOLDER="runs/run-${GITHUB_RUN_NUMBER}-attempt-${GITHUB_RUN_ATTEMPT}"
           REPORT_URL="${PAGES_BASE_URL}/${RUN_FOLDER}/"
           VIDEO_URL="${PAGES_BASE_URL}/${RUN_FOLDER}/video.html"
-
           echo "run_folder=${RUN_FOLDER}" >> $GITHUB_OUTPUT
           echo "report_url=${REPORT_URL}" >> $GITHUB_OUTPUT
           echo "video_url=${VIDEO_URL}" >> $GITHUB_OUTPUT
-
       - name: Publish klasörünü hazırla
         if: always() && steps.allure_report.outputs.report_ready == 'true'
         run: |
           mkdir -p "public/${{ steps.run_links.outputs.run_folder }}"
           cp -R target/allure-report/* "public/${{ steps.run_links.outputs.run_folder }}/"
-
           mkdir -p "public/${{ steps.run_links.outputs.run_folder }}/video"
           if [ -f "./test.mp4" ]; then
             cp ./test.mp4 "public/${{ steps.run_links.outputs.run_folder }}/video/test.mp4"
           fi
-
           cat > "public/${{ steps.run_links.outputs.run_folder }}/video.html" << 'EOF'
           <!DOCTYPE html>
           <html lang="tr">
@@ -191,7 +145,6 @@ jobs:
           </body>
           </html>
           EOF
-
           cat > public/index.html << EOF
           <!DOCTYPE html>
           <html lang="tr">
@@ -206,14 +159,11 @@ jobs:
           </body>
           </html>
           EOF
-
           touch public/.nojekyll
-
       - name: Publish klasörünü kontrol et
         if: always() && steps.allure_report.outputs.report_ready == 'true'
         run: |
           find public -maxdepth 4 -type f | sort || true
-
       - name: Allure sonuçlarını yükle
         if: always()
         uses: actions/upload-artifact@v4
