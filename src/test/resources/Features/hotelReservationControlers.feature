@@ -6,7 +6,7 @@ Feature: Otel rezervasyon tamamlama senaryolari
     And Uygulamanin acildigi kontrol edilir ve gerekli izinler verilir
     And Anasayfada otel arama alanina tiklanir
 
-  @Tb @Rezervasyon @E2E
+  @Tb @Rezervasyon @E
   Scenario Outline: Otel rezervasyonu alip odeme ile tamamla ve rezervasyon numarasini kaydet
 
     # --- Arama / Liste ---
