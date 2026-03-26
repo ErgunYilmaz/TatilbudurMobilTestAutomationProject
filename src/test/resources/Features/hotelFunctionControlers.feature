@@ -32,7 +32,7 @@ Feature: Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri
 
 
 
-  @Tb @FiyatArtan
+   @FiyatArtan
   Scenario Outline: Otelleri fiyata göre artan sekilde listeleme
     And  Siralama butonuna tiklanir
     When Siralama kriteri olarak "Fiyat (artan)" secilir
@@ -44,7 +44,7 @@ Feature: Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri
       | İstanbul              | 5             | 10            |
       | Ankara                | 7             | 17            |
 
-  @Tb @FiyatAzalan
+  @FiyatAzalan
   Scenario Outline: Otelleri fiyata göre azalan sekilde listeleme
     And  Siralama butonuna tiklanir
     When Siralama kriteri olarak "Fiyat (azalan)" secilir
@@ -56,7 +56,7 @@ Feature: Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri
       | İstanbul              | 5             | 10            |
       | Ankara                | 7             | 17            |
 
-  @Tb @PuanAzalan
+  @PuanAzalan
   Scenario Outline: Otelleri puana göre en yuksekten en dusuge siralama
     And  Siralama butonuna tiklanir
     When Siralama kriteri olarak "Puan (yüksekten düşüğe)" secilir
@@ -68,7 +68,7 @@ Feature: Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri
       | İstanbul              | 5             | 10            |
       | Ankara                | 7             | 17            |
 
-  @Tb @PuanArtan
+  @PuanArtan
   Scenario Outline: Otelleri puana göre en dusukten en yuksege siralama
     And  Siralama butonuna tiklanir
     When Siralama kriteri olarak "Puan (düşükten yükseğe)" secilir
@@ -80,7 +80,7 @@ Feature: Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri
       | İstanbul              | 5             | 10            |
       | Ankara                | 7             | 17            |
 
-  @Tb @IndirimOrani
+  @IndirimOrani
   Scenario Outline: Otelleri indirim oranina göre siralama
     And  Siralama butonuna tiklanir
     When Siralama kriteri olarak "İndirim oranı" secilir
@@ -91,8 +91,7 @@ Feature: Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri
       | otelSehirBolgeTema    | girisGunSonra | cikisGunSonra |
       | İstanbul              | 5             | 10            |
       | Ankara                | 7             | 17            |
-
-  @Tb @FiyatAraligi
+  @FiyatAraligi
   Scenario Outline: Fiyat araligina göre otel listesi filtreleme
     And  Filtreleme butonuna tiklanir
     When Fiyat araligi "<min>-<max>" secilir
@@ -102,7 +101,7 @@ Feature: Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri
       | otelSehirBolgeTema     | girisGunSonra | cikisGunSonra | min | max  |
       | İstanbul               | 5             | 10            | 1000| 3000 |
 
-  @Tb @PuanFiltre
+  @PuanFiltre
   Scenario Outline: Misafir puanina göre otel listesi filtreleme
     And  Filtreleme butonuna tiklanir
     When Misafir puani "<puan>" ve uzeri secilir
@@ -111,8 +110,7 @@ Feature: Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri
     Examples:
       | otelSehirBolgeTema     | girisGunSonra | cikisGunSonra | puan |
       | İstanbul               | 4             | 9             | 8    |
-
-  @Tb @FiltrelemeKategoriyeGore
+  @FiltrelemeKategoriyeGore
   Scenario Outline: Misafir filtreleme kategorisine göre otel listesi filtreleme
     Given Misafir filtreleme sayfasindadir
     And Filtreleme butonuna tiklanir
@@ -135,7 +133,7 @@ Feature: Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri
       | İstanbul            | 4             | 9              | Aktivite-Eğlence      | Spor Salonu                  |
       | İstanbul            | 4             | 9              | Otel Temaları         | Balayı Otelleri              |
 
-  @Tb @PopulerFiltre
+  @PopulerFiltre
     Scenario Outline: Misafir populer filtrelere gore otel listesi filtreleme
       And  Filtreleme butonuna tiklanir
       When Misafir "<populerFiltre>" gore filtreler
@@ -143,7 +141,7 @@ Feature: Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri
       Examples:
         | otelSehirBolgeTema     | girisGunSonra | cikisGunSonra | populerFiltre|
         | İstanbul               | 4             | 9             |              |
-  @Tb @BolgeyeFiltre
+  @BolgeyeFiltre
   Scenario Outline: Misafir bolgeye gore otel listesi filtreleme
     And  Filtreleme butonuna tiklanir
     When Misafir "<bolge>" gore filtreler
@@ -151,7 +149,7 @@ Feature: Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri
     Examples:
       | otelSehirBolgeTema   | girisGunSonra | cikisGunSonra | bolge|
       | İstanbul             | 4             | 9             | İstanbul|
-  @Tb @KonaklamayaTipineGoreFiltre
+  @KonaklamayaTipineGoreFiltre
   Scenario Outline: Misafir konaklama tipine gore otel listesi filtreleme
     And  Filtreleme butonuna tiklanir
     When Misafir "<konaklamaTipi>" gore filtreler
@@ -159,7 +157,7 @@ Feature: Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri
     Examples:
       | otelSehirBolgeTema     | girisGunSonra | cikisGunSonra | konaklamaTipi|
       | İstanbul               | 4             | 9             | Her Şey Dahil|
-  @Tb @OtelTipineGoreFiltre
+  @OtelTipineGoreFiltre
   Scenario Outline: Misafir otel tipine gore otel listesi filtreleme
     And  Filtreleme butonuna tiklanir
     When Misafir "<otelTipi>" gore filtreler
@@ -167,7 +165,7 @@ Feature: Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri
     Examples:
       | otelSehirBolgeTema     | girisGunSonra | cikisGunSonra | otelTipi|
       | İstanbul               | 4             | 9             | Vogue Otelleri|
-  @Tb @MisafirOzelDonemeGoreFiltre
+  @MisafirOzelDonemeGoreFiltre
   Scenario Outline: Misafir ozel doneme gore otel listesi filtreleme
     And  Filtreleme butonuna tiklanir
     When Misafir "<ozelDonem>" gore filtreler
@@ -175,7 +173,7 @@ Feature: Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri
     Examples:
       | otelSehirBolgeTema     | girisGunSonra | cikisGunSonra | ozelDonem|
       | İstanbul               | 4             | 9             | 2026 Yazı İlk Fırsatları|
-  @Tb @AktiviteEglenceGoreFiltre
+  @AktiviteEglenceGoreFiltre
   Scenario Outline: Misafir aktivite eglence gore otel listesi filtreleme
     And  Filtreleme butonuna tiklanir
     When Misafir "<aktiviteEglence>" gore filtreler
@@ -183,7 +181,7 @@ Feature: Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri
     Examples:
       | otelSehirBolgeTema     | girisGunSonra | cikisGunSonra | aktiviteEglence|
       | İstanbul               | 4             | 9             | Spor salonu    |
-    @Tb @OtelTemalarinaGoreFiltre
+    @OtelTemalarinaGoreFiltre
     Scenario Outline:Misafir otel temalarina gore otel listesi filtreleme
       And  Filtreleme butonuna tiklanir
       When Misafir "<aktiviteEglence>" gore filtreler
@@ -194,14 +192,14 @@ Feature: Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri
 
 
   # --- LİSTELEME SAYFASI KONTROLLERİ ---
-  @Tb @SiziArayalim
+  @SiziArayalim
   Scenario Outline: Listeleme sayfasinda "Sizi arayalim" butonunun kontrolü
     Then Listeleme sayfasinda "Sizi arayalim" butonunun goruntulendigi dogrulanir
     Examples:
       | otelSehirBolgeTema    | girisGunSonra | cikisGunSonra |
       | İstanbul              | 4             | 9             |
 
-  @Tb @DahaFazlaGoster
+  @DahaFazlaGoster
   Scenario Outline: Otel listeleme sayfasinda "Daha fazla göster" kisminin kontrolü
     When Kullanici "Daha fazla göster" butonuna tiklar
     Then Daha fazla otelin listelendigini dogrular
@@ -210,7 +208,7 @@ Feature: Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri
       | İstanbul               | 4             | 9             |
 
   # --- OTEL DETAY SAYFASI ---
-  @Tb @DetaySearchBar
+  @DetaySearchBar
   Scenario Outline: Otel detay sayfasinda search barda tarih degisikligi kontrolu
     When Otel detay sayfasinda arama tarihleri "<yeniGirisGunSonra>" - "<yeniCikisGunSonra>" olarak degistirilir
     Then Sonuclarin yeni tarihlere göre guncellendigi dogrulanir
@@ -222,7 +220,7 @@ Feature: Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri
       | otelSehirBolgeTema    | girisGunSonra | cikisGunSonra | yeniGirisGunSonra | yeniCikisGunSonra |
       | İstanbul              | 5             | 10            | 7                 | 12                |
 
-  @Tb @Müsaitlik
+  @Müsaitlik
   Scenario Outline: Otel müsaitlik kontrolü
     When Secilen otelin müsaitlik durumu sorgulanir
     Then Müsaitlik bilgisinin dogru sekilde gosterildigi dogrulanir
@@ -230,7 +228,7 @@ Feature: Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri
       | otelSehirBolgeTema    | girisGunSonra | cikisGunSonra |
       | İstanbul              | 4             | 9             |
 
-  @Tb @HaritadaGoster
+  @HaritadaGoster
   Scenario Outline: Otelin haritada gösterilmesi
     When Haritada göster secenegine tiklanir
     Then Otelin konumunun haritada dogru sekilde acildigi dogrulanir
@@ -239,7 +237,7 @@ Feature: Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri
       | İstanbul              | 4             | 9             |
 
 
-  @Tb @Favori
+  @Favori
   Scenario Outline: Otelin favoriye eklenmesi
     When Kullanici oteli favorilere ekler
     Then Otelin favoriler listesine eklendigi dogrulanir
@@ -247,7 +245,7 @@ Feature: Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri
       | otelSehirBolgeTema    | girisGunSonra | cikisGunSonra |
       | İstanbul              | 4             | 9             |
 
-  @Tb @ListeSecim
+  @ListeSecim
   Scenario Outline: Otel aramada listeden secim yapma
     When Kullanici listeden bir otel secer
     Then Secilen otelin detay sayfasinin acildigi dogrulanir

@@ -4,6 +4,17 @@ on:
   push:
     branches: [ "main" ]
   workflow_dispatch:
+  schedule:
+    # GitHub Actions cron UTC çalışır
+    # Türkiye saati UTC+3
+    # 00:00 TR = 21:00 UTC (bir önceki gün)
+    # 06:00 TR = 03:00 UTC
+    # 13:00 TR = 10:00 UTC
+    # 17:00 TR = 14:00 UTC
+    - cron: '0 21 * * *'
+    - cron: '0 3 * * *'
+    - cron: '0 10 * * *'
+    - cron: '0 14 * * *'
 
 permissions:
   contents: write
@@ -17,6 +28,7 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
 
     steps:
       - name: Checkout
@@ -40,6 +52,7 @@ jobs:
           key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             maven-${{ runner.os }}-
+
       - name: AVD cache
         uses: actions/cache@v4
         with:
@@ -53,20 +66,24 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+
       - name: APK indir
         run: |
           mkdir -p Apps
           curl -fL -o Apps/tb.apk "https://github.com/${{ github.repository }}/releases/download/${{ env.APK_RELEASE_TAG }}/${{ env.APK_ASSET_NAME }}"
           ls -lah Apps
+
       - name: Appium ve Allure kur
         run: |
           npm install -g appium@next
           appium driver install uiautomator2
           npm install -g allure-commandline
+
       - name: Appium başlat
         run: |
           appium > appium.log 2>&1 &
           sleep 15
+
       - name: Emulator + Test + Video
         uses: ReactiveCircus/android-emulator-runner@v2
         with:
@@ -81,23 +98,31 @@ jobs:
             adb devices
             adb wait-for-device
             adb shell getprop sys.boot_completed || true
+
             adb shell rm -f /sdcard/test.mp4 || true
             rm -f ./test.mp4 || true
+
             echo "Video kaydı başlatılıyor"
             adb shell screenrecord /sdcard/test.mp4 > /dev/null 2>&1 &
             sleep 3
+
             echo "Test başlıyor"
             mvn -B --no-transfer-progress clean test || true
+
             echo "Video kaydı durduruluyor"
             adb shell pkill -INT screenrecord || true
             sleep 5
+
             echo "Video workspace'e alınıyor"
             adb pull /sdcard/test.mp4 ./test.mp4 || true
+
             echo "Kontroller"
             pwd
             ls -lah
             ls -lah target || true
             ls -lah target/allure-results || true
+            ls -lah target/surefire-reports || true
+
       - name: Allure report oluştur
         id: allure_report
         if: always()
@@ -110,6 +135,43 @@ jobs:
             echo "report_ready=false" >> $GITHUB_OUTPUT
             echo "Allure sonuçları yok, rapor üretilmedi."
           fi
+
+      - name: Mail özet bilgilerini hazırla
+        id: mail_summary
+        if: always() && steps.allure_report.outputs.report_ready == 'true'
+        run: |
+          SUMMARY_FILE="target/allure-report/widgets/summary.json"
+
+          if [ -f "$SUMMARY_FILE" ]; then
+            TOTAL=$(grep -o '"total":[0-9]*' "$SUMMARY_FILE" | head -1 | cut -d: -f2)
+            PASSED=$(grep -o '"passed":[0-9]*' "$SUMMARY_FILE" | head -1 | cut -d: -f2)
+            FAILED=$(grep -o '"failed":[0-9]*' "$SUMMARY_FILE" | head -1 | cut -d: -f2)
+            BROKEN=$(grep -o '"broken":[0-9]*' "$SUMMARY_FILE" | head -1 | cut -d: -f2)
+            SKIPPED=$(grep -o '"skipped":[0-9]*' "$SUMMARY_FILE" | head -1 | cut -d: -f2)
+          else
+            TOTAL=0
+            PASSED=0
+            FAILED=0
+            BROKEN=0
+            SKIPPED=0
+          fi
+
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+          echo "passed=$PASSED" >> $GITHUB_OUTPUT
+          echo "failed=$FAILED" >> $GITHUB_OUTPUT
+          echo "broken=$BROKEN" >> $GITHUB_OUTPUT
+          echo "skipped=$SKIPPED" >> $GITHUB_OUTPUT
+
+      - name: Mail durum bilgisini hazırla
+        id: mail_status
+        if: always() && steps.allure_report.outputs.report_ready == 'true'
+        run: |
+          if [ "${{ steps.mail_summary.outputs.failed }}" = "0" ] && [ "${{ steps.mail_summary.outputs.broken }}" = "0" ]; then
+            echo "status_text=Başarılı" >> $GITHUB_OUTPUT
+          else
+            echo "status_text=İncelenmeli" >> $GITHUB_OUTPUT
+          fi
+
       - name: Koşu linklerini hazırla
         id: run_links
         if: always() && steps.allure_report.outputs.report_ready == 'true'
@@ -120,15 +182,18 @@ jobs:
           echo "run_folder=${RUN_FOLDER}" >> $GITHUB_OUTPUT
           echo "report_url=${REPORT_URL}" >> $GITHUB_OUTPUT
           echo "video_url=${VIDEO_URL}" >> $GITHUB_OUTPUT
+
       - name: Publish klasörünü hazırla
         if: always() && steps.allure_report.outputs.report_ready == 'true'
         run: |
           mkdir -p "public/${{ steps.run_links.outputs.run_folder }}"
           cp -R target/allure-report/* "public/${{ steps.run_links.outputs.run_folder }}/"
+
           mkdir -p "public/${{ steps.run_links.outputs.run_folder }}/video"
           if [ -f "./test.mp4" ]; then
             cp ./test.mp4 "public/${{ steps.run_links.outputs.run_folder }}/video/test.mp4"
           fi
+
           cat > "public/${{ steps.run_links.outputs.run_folder }}/video.html" << 'EOF'
           <!DOCTYPE html>
           <html lang="tr">
@@ -136,15 +201,64 @@ jobs:
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Test Videosu</title>
+            <style>
+              body {
+                font-family: Arial, sans-serif;
+                background: #f4f7fb;
+                margin: 0;
+                padding: 32px 16px;
+                color: #1f2937;
+              }
+              .card {
+                max-width: 980px;
+                margin: 0 auto;
+                background: #ffffff;
+                border-radius: 16px;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+                padding: 24px;
+              }
+              h2 {
+                margin-top: 0;
+                margin-bottom: 16px;
+                color: #0f172a;
+                font-size: 24px;
+              }
+              .video-wrap {
+                width: 100%;
+                max-width: 860px;
+                margin: 0 auto;
+              }
+              video {
+                display: block;
+                width: 100%;
+                height: auto;
+                max-height: 70vh;
+                border-radius: 12px;
+                background: #000;
+                object-fit: contain;
+              }
+              .note {
+                margin-top: 14px;
+                font-size: 13px;
+                color: #64748b;
+                text-align: center;
+              }
+            </style>
           </head>
           <body>
-            <h2>Test Videosu</h2>
-            <video width="900" controls>
-              <source src="./video/test.mp4" type="video/mp4">
-            </video>
+            <div class="card">
+              <h2>Test Videosu</h2>
+              <div class="video-wrap">
+                <video controls preload="metadata">
+                  <source src="./video/test.mp4" type="video/mp4">
+                </video>
+              </div>
+              <div class="note">Video sayfası ilk açılışta ekrana sığacak şekilde optimize edilmiştir.</div>
+            </div>
           </body>
           </html>
           EOF
+
           cat > public/index.html << EOF
           <!DOCTYPE html>
           <html lang="tr">
@@ -159,11 +273,14 @@ jobs:
           </body>
           </html>
           EOF
+
           touch public/.nojekyll
+
       - name: Publish klasörünü kontrol et
         if: always() && steps.allure_report.outputs.report_ready == 'true'
         run: |
           find public -maxdepth 4 -type f | sort || true
+
       - name: Allure sonuçlarını yükle
         if: always()
         uses: actions/upload-artifact@v4
@@ -207,6 +324,29 @@ jobs:
           publish_dir: ./public
           keep_files: true
 
+      - name: Pages yayınının hazır olmasını bekle
+        if: always() && steps.allure_report.outputs.report_ready == 'true'
+        run: |
+          REPORT_URL="${{ steps.run_links.outputs.report_url }}"
+          VIDEO_URL="${{ steps.run_links.outputs.video_url }}"
+
+          echo "GitHub Pages yayını kontrol ediliyor..."
+          for i in {1..18}; do
+            REPORT_CODE=$(curl -L -s -o /dev/null -w "%{http_code}" "$REPORT_URL")
+            VIDEO_CODE=$(curl -L -s -o /dev/null -w "%{http_code}" "$VIDEO_URL")
+
+            echo "Deneme $i -> report:$REPORT_CODE video:$VIDEO_CODE"
+
+            if [ "$REPORT_CODE" = "200" ] && [ "$VIDEO_CODE" = "200" ]; then
+              echo "Pages yayını hazır."
+              exit 0
+            fi
+
+            sleep 10
+          done
+
+          echo "Pages hala tam hazır değil. Mail yine de gönderilecek."
+
       - name: Test sonucu mail gönder
         if: always() && steps.allure_report.outputs.report_ready == 'true'
         uses: dawidd6/action-send-mail@v11
@@ -217,16 +357,125 @@ jobs:
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "Tatilbudur Mobil Test Raporu - Run #${{ github.run_number }}"
-          to: |
-            ergun.yilmaz@tatilbudur.com
-            
+          # Buraya mevcut YAML dosyandaki alıcı listesini aynen bırak
+          to: "ergun.yilmaz@tatilbudur.com"
           from: "Test Automation <${{ secrets.EMAIL_USERNAME }}>"
           html_body: |
-            <h2>Tatilbudur Mobil Test Çıktıları</h2>
-            <p><b>Koşu Numarası:</b> #${{ github.run_number }}</p>
-            <p><b>Branch:</b> ${{ github.ref_name }}</p>
-            <p><b>Allure Raporu:</b><br>
-            <a href="${{ steps.run_links.outputs.report_url }}">Raporu Aç</a></p>
-            <p><b>Test Videosu:</b><br>
-            <a href="${{ steps.run_links.outputs.video_url }}">Videoyu Aç</a></p>
-            <p>Bu e-posta GitHub Actions tarafından otomatik gönderilmiştir.</p>
+            <!DOCTYPE html>
+            <html lang="tr">
+            <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>Tatilbudur Mobil Test Raporu</title>
+            </head>
+            <body style="margin:0; padding:0; background-color:#f3f6fb; font-family:Arial, Helvetica, sans-serif; color:#1f2937;">
+              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f3f6fb; padding:24px 0;">
+                <tr>
+                  <td align="center">
+                    <table role="presentation" width="760" cellspacing="0" cellpadding="0" style="max-width:760px; width:100%; background:#ffffff; border-radius:18px; overflow:hidden; box-shadow:0 10px 30px rgba(15,23,42,0.10);">
+                      <tr>
+                        <td style="background:linear-gradient(135deg, #0ea5e9, #2563eb); padding:28px 32px; color:#ffffff;">
+                          <div style="font-size:26px; font-weight:700; margin-bottom:6px;">Tatilbudur Mobil Test Sonucu</div>
+                          <div style="font-size:14px; opacity:0.95;">GitHub Actions tarafından otomatik oluşturuldu</div>
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td style="padding:28px 32px 14px 32px;">
+                          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:18px;">
+                            <tr>
+                              <td style="padding:14px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:12px;">
+                                <div style="font-size:13px; color:#64748b;">Koşu Numarası</div>
+                                <div style="font-size:20px; font-weight:700; color:#0f172a;">#${{ github.run_number }}</div>
+                              </td>
+                              <td width="12"></td>
+                              <td style="padding:14px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:12px;">
+                                <div style="font-size:13px; color:#64748b;">Branch</div>
+                                <div style="font-size:20px; font-weight:700; color:#0f172a;">${{ github.ref_name }}</div>
+                              </td>
+                            </tr>
+                          </table>
+
+                          <div style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:14px;">Test Özeti</div>
+
+                          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:22px;">
+                            <tr>
+                              <td style="padding:10px;">
+                                <div style="background:#eef2ff; border:1px solid #c7d2fe; border-radius:14px; padding:18px; text-align:center;">
+                                  <div style="font-size:13px; color:#6366f1;">Toplam</div>
+                                  <div style="font-size:28px; font-weight:700; color:#312e81;">${{ steps.mail_summary.outputs.total }}</div>
+                                </div>
+                              </td>
+                              <td style="padding:10px;">
+                                <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:14px; padding:18px; text-align:center;">
+                                  <div style="font-size:13px; color:#16a34a;">Passed</div>
+                                  <div style="font-size:28px; font-weight:700; color:#166534;">${{ steps.mail_summary.outputs.passed }}</div>
+                                </div>
+                              </td>
+                              <td style="padding:10px;">
+                                <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:14px; padding:18px; text-align:center;">
+                                  <div style="font-size:13px; color:#dc2626;">Failed</div>
+                                  <div style="font-size:28px; font-weight:700; color:#991b1b;">${{ steps.mail_summary.outputs.failed }}</div>
+                                </div>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding:10px;">
+                                <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:14px; padding:18px; text-align:center;">
+                                  <div style="font-size:13px; color:#ea580c;">Broken</div>
+                                  <div style="font-size:28px; font-weight:700; color:#9a3412;">${{ steps.mail_summary.outputs.broken }}</div>
+                                </div>
+                              </td>
+                              <td style="padding:10px;">
+                                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:14px; padding:18px; text-align:center;">
+                                  <div style="font-size:13px; color:#64748b;">Skipped</div>
+                                  <div style="font-size:28px; font-weight:700; color:#334155;">${{ steps.mail_summary.outputs.skipped }}</div>
+                                </div>
+                              </td>
+                              <td style="padding:10px;">
+                                <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:14px; padding:18px; text-align:center;">
+                                  <div style="font-size:13px; color:#2563eb;">Durum</div>
+                                  <div style="font-size:20px; font-weight:700; color:#1d4ed8;">${{ steps.mail_status.outputs.status_text }}</div>
+                                </div>
+                              </td>
+                            </tr>
+                          </table>
+
+                          <div style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:14px;">Hızlı Erişim</div>
+
+                          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:18px;">
+                            <tr>
+                              <td style="padding-bottom:12px;">
+                                <a href="${{ steps.run_links.outputs.report_url }}" style="display:block; text-decoration:none; background:#eff6ff; border:1px solid #bfdbfe; border-radius:14px; padding:16px 18px; color:#1d4ed8;">
+                                  <div style="font-size:17px; font-weight:700; margin-bottom:4px;">Allure Raporunu Aç</div>
+                                  <div style="font-size:13px; color:#475569;">Detaylı test sonuçları, senaryolar ve adımlar</div>
+                                </a>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td style="padding-bottom:12px;">
+                                <a href="${{ steps.run_links.outputs.video_url }}" style="display:block; text-decoration:none; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:14px; padding:16px 18px; color:#15803d;">
+                                  <div style="font-size:17px; font-weight:700; margin-bottom:4px;">Test Videosunu Aç</div>
+                                  <div style="font-size:13px; color:#475569;">Koşu videosunu web üzerinden izleyin</div>
+                                </a>
+                              </td>
+                            </tr>
+                          </table>
+
+                          <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:12px; padding:14px 16px; font-size:13px; color:#9a3412; line-height:1.6;">
+                            Not: GitHub Pages yayını bazen birkaç saniye gecikmeli açılabilir. Workflow, mail göndermeden önce linkleri kontrol eder; çok nadir durumlarda kısa bir bekleme sonrası tekrar denemek gerekebilir.
+                          </div>
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td style="padding:18px 32px; background:#f8fafc; color:#64748b; font-size:12px; text-align:center; border-top:1px solid #e5e7eb;">
+                          Tatilbudur Mobil Test Otomasyonu
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </body>
+            </html>

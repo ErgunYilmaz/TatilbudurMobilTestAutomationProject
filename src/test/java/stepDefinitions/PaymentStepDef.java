@@ -56,8 +56,8 @@ public class PaymentStepDef {
     }
     @Then("Rezervasyonu Tamamla butonuna tiklanir")
     public void rezervasyonu_tamamla_butonuna_tiklanir() {
-        Assert.fail("Bilerek hata fırlatıldı - test senaryosu kontrolü");
-       // ReusableMethods.bekleTiklanabilir(paymentPage.completedRezervation);
+       // Assert.fail("Bilerek hata fırlatıldı - test senaryosu kontrolü");
+        ReusableMethods.bekleTiklanabilir(paymentPage.completedRezervation);
         ReusableMethods.bekle(10);
     }
     @Then("Rezervasyonun onaylandigi dogrulanir")
