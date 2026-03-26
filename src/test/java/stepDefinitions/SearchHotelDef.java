@@ -1,6 +1,7 @@
 package stepDefinitions;
 import io.cucumber.java.en.When;
 import io.cucumber.plugin.event.HookTestStep;
+import org.junit.Assert;
 import pages.hotelCategoryPage;
 import pages.tatilbudurPage;
 import utilities.ReusableMethods;
@@ -17,6 +18,7 @@ public class SearchHotelDef {
 
     @When("Anasayfada otel arama alanina tiklanir")
     public void anasayfada_otel_arama_alanina_tiklanir() {
+        Assert.fail("Bilerek hata fırlatıldı - test senaryosu kontrolü");
         reusableMethods.bekleTiklanabilir(tatilbudurPage.hotelSearchlocation);
     }
     @When("Otel arama alanina {string} adi yazilir")
