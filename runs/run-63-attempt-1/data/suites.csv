@@ -1,0 +1,9 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"  Uygulamada otel ve tur aramasi yapilir, sonuclar farkli kriterlere göre filtrelenir ve siralanir.
+  Ayrica detay sayfalari ve buton kontrolleri dogrulanir.","235541","Otelleri filtrelenen siralamaya gore listeleme","","2026-03-26","passed","2026-03-26","","Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri","Otelleri filtrelenen siralamaya gore listeleme",""
+"","34216","Otel rezervasyonu alip odeme ile tamamla ve rezervasyon numarasini kaydet","","2026-03-26","broken","2026-03-26","","Otel rezervasyon tamamlama senaryolari","Otel rezervasyonu alip odeme ile tamamla ve rezervasyon numarasini kaydet",""
+"  Uygulamada otel ve tur aramasi yapilir, sonuclar farkli kriterlere göre filtrelenir ve siralanir.
+  Ayrica detay sayfalari ve buton kontrolleri dogrulanir.","250588","Otelleri filtrelenen siralamaya gore listeleme","","2026-03-26","passed","2026-03-26","","Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri","Otelleri filtrelenen siralamaya gore listeleme",""
+"  Uygulamada otel ve tur aramasi yapilir, sonuclar farkli kriterlere göre filtrelenir ve siralanir.
+  Ayrica detay sayfalari ve buton kontrolleri dogrulanir.","263956","Otelleri filtrelenen siralamaya gore listeleme","","2026-03-26","passed","2026-03-26","","Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri","Otelleri filtrelenen siralamaya gore listeleme",""
+"","59853","Bodrum otellerini fiyat artan siralama ile listeleme","","2026-03-26","skipped","2026-03-26","","Otel aratma ve listeyi fiyat(artan)'a gore siralama Uygulamada otel aramasi yapilir ve cikan sonuclar fiyata gore artan sekilde siralanir.","Bodrum otellerini fiyat artan siralama ile listeleme",""

@@ -1,0 +1,4 @@
+"BROKEN","EPIC","FAILED","FEATURE","PASSED","SKIPPED","STORY","UNKNOWN"
+"0","","0","Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri","3","0","Otelleri filtrelenen siralamaya gore listeleme","0"
+"1","","0","Otel rezervasyon tamamlama senaryolari","0","0","Otel rezervasyonu alip odeme ile tamamla ve rezervasyon numarasini kaydet","0"
+"0","","0","Otel aratma ve listeyi fiyat(artan)'a gore siralama Uygulamada otel aramasi yapilir ve cikan sonuclar fiyata gore artan sekilde siralanir.","0","1","Bodrum otellerini fiyat artan siralama ile listeleme","0"
