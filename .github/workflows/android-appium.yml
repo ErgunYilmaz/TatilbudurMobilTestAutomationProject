@@ -358,6 +358,7 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "Tatilbudur Mobil Test Raporu - Run #${{ github.run_number }}"
           to: "ergun.yilmaz@tatilbudur.com"
+
           from: "Test Automation <${{ secrets.EMAIL_USERNAME }}>"
           html_body: |
             <!DOCTYPE html>
