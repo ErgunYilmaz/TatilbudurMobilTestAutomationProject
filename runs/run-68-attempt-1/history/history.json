@@ -1,0 +1,1 @@
+{"e3f577fb1068807bc9c1c5e65507b74b":{"statistic":{"failed":1,"broken":0,"skipped":0,"passed":0,"unknown":0,"total":1},"items":[{"uid":"6e7732fb7b62ad57","status":"failed","statusDetails":"Bilerek hata fırlatıldı - test senaryosu kontrolü","time":{"start":1774544408923,"stop":1774544465378,"duration":56455}}]}}
