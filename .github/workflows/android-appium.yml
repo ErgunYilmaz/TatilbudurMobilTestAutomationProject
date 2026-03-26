@@ -369,102 +369,127 @@ jobs:
               <title>Tatilbudur Mobil Test Raporu</title>
             </head>
             <body style="margin:0; padding:0; background-color:#f3f6fb; font-family:Arial, Helvetica, sans-serif; color:#1f2937;">
-              <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color:#f3f6fb; padding:24px 0;">
+              <table width="100%" cellspacing="0" cellpadding="0" style="padding:20px 0;">
                 <tr>
                   <td align="center">
-                    <table role="presentation" width="760" cellspacing="0" cellpadding="0" style="max-width:760px; width:100%; background:#ffffff; border-radius:18px; overflow:hidden; box-shadow:0 10px 30px rgba(15,23,42,0.10);">
+
+                    <!-- ANA KART -->
+                    <table width="720" cellspacing="0" cellpadding="0" style="max-width:720px; width:100%; background:#ffffff; border-radius:14px; overflow:hidden; box-shadow:0 6px 18px rgba(0,0,0,0.08);">
+
+                      <!-- HEADER -->
                       <tr>
-                        <td style="background:linear-gradient(135deg, #0ea5e9, #2563eb); padding:32px; color:#ffffff; text-align:center;">
-                          <div style="font-size:28px; font-weight:700; line-height:1.3;">
+                        <td style="background:#1e3a8a; padding:18px 20px; color:#ffffff; text-align:center;">
+                          <div style="font-size:20px; font-weight:700;">
                             Tatilbudur Mobil Test Otomasyon Koşum Raporu
                           </div>
-                          <div style="font-size:13px; opacity:0.92; margin-top:10px;">
-                            GitHub Actions tarafından otomatik oluşturuldu
-                          </div>
                         </td>
                       </tr>
 
+                      <!-- CONTENT -->
                       <tr>
-                        <td style="padding:28px 32px 14px 32px;">
-                          <div style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:14px;">Test Özeti</div>
+                        <td style="padding:20px;">
 
-                          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:22px;">
+                          <!-- TEST OZET -->
+                          <div style="font-size:15px; font-weight:700; margin-bottom:12px;">
+                            Test Özeti
+                          </div>
+
+                          <table width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:16px;">
                             <tr>
-                              <td style="padding:8px;">
-                                <div style="background:#eef2ff; border:1px solid #c7d2fe; border-radius:12px; padding:14px; text-align:center;">
-                                  <div style="font-size:12px; color:#6366f1;">Toplam</div>
-                                  <div style="font-size:24px; font-weight:700; color:#312e81;">${{ steps.mail_summary.outputs.total }}</div>
+
+                              <td style="padding:6px;">
+                                <div style="background:#eef2ff; border:1px solid #c7d2fe; border-radius:10px; padding:12px; text-align:center;">
+                                  <div style="font-size:11px;">Toplam</div>
+                                  <div style="font-size:20px; font-weight:700;">${{ steps.mail_summary.outputs.total }}</div>
                                 </div>
                               </td>
-                              <td style="padding:8px;">
-                                <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:14px; text-align:center;">
-                                  <div style="font-size:12px; color:#16a34a;">Passed</div>
-                                  <div style="font-size:24px; font-weight:700; color:#166534;">${{ steps.mail_summary.outputs.passed }}</div>
+
+                              <td style="padding:6px;">
+                                <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px; text-align:center;">
+                                  <div style="font-size:11px;">Passed</div>
+                                  <div style="font-size:20px; font-weight:700;">${{ steps.mail_summary.outputs.passed }}</div>
                                 </div>
                               </td>
-                              <td style="padding:8px;">
-                                <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:12px; text-align:center;">
-                                  <div style="font-size:12px; color:#dc2626;">Failed</div>
-                                  <div style="font-size:20px; font-weight:700; color:#991b1b;">${{ steps.mail_summary.outputs.failed }}</div>
+
+                              <td style="padding:6px;">
+                                <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:10px; text-align:center;">
+                                  <div style="font-size:11px;">Failed</div>
+                                  <div style="font-size:18px; font-weight:700;">${{ steps.mail_summary.outputs.failed }}</div>
                                 </div>
                               </td>
+
                             </tr>
+
                             <tr>
-                              <td style="padding:8px;">
-                                <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:12px; padding:14px; text-align:center;">
-                                  <div style="font-size:12px; color:#ea580c;">Broken</div>
-                                  <div style="font-size:24px; font-weight:700; color:#9a3412;">${{ steps.mail_summary.outputs.broken }}</div>
+
+                              <td style="padding:6px;">
+                                <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:10px; padding:12px; text-align:center;">
+                                  <div style="font-size:11px;">Broken</div>
+                                  <div style="font-size:20px; font-weight:700;">${{ steps.mail_summary.outputs.broken }}</div>
                                 </div>
                               </td>
-                              <td style="padding:8px;">
-                                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:14px; text-align:center;">
-                                  <div style="font-size:12px; color:#64748b;">Skipped</div>
-                                  <div style="font-size:24px; font-weight:700; color:#334155;">${{ steps.mail_summary.outputs.skipped }}</div>
+
+                              <td style="padding:6px;">
+                                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px; text-align:center;">
+                                  <div style="font-size:11px;">Skipped</div>
+                                  <div style="font-size:20px; font-weight:700;">${{ steps.mail_summary.outputs.skipped }}</div>
                                 </div>
                               </td>
-                              <td style="padding:8px;">
-                                <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:12px; text-align:center;">
-                                  <div style="font-size:12px; color:#2563eb;">Durum</div>
-                                  <div style="font-size:16px; font-weight:700; color:#1d4ed8;">${{ steps.mail_status.outputs.status_text }}</div>
+
+                              <td style="padding:6px;">
+                                <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:10px; text-align:center;">
+                                  <div style="font-size:11px;">Durum</div>
+                                  <div style="font-size:15px; font-weight:700;">
+                                    ${{ steps.mail_status.outputs.status_text }}
+                                  </div>
                                 </div>
                               </td>
+
                             </tr>
                           </table>
 
-                          <div style="font-size:16px; font-weight:700; color:#0f172a; margin-bottom:14px;">Hızlı Erişim</div>
+                          <!-- LINKLER -->
+                          <div style="font-size:15px; font-weight:700; margin-bottom:10px;">
+                            Hızlı Erişim
+                          </div>
 
-                          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin-bottom:18px;">
+                          <table width="100%" cellspacing="0" cellpadding="0">
+
                             <tr>
-                              <td style="padding-bottom:12px;">
-                                <a href="${{ steps.run_links.outputs.report_url }}" style="display:block; text-decoration:none; background:#eff6ff; border:1px solid #bfdbfe; border-radius:14px; padding:16px 18px; color:#1d4ed8;">
-                                  <div style="font-size:17px; font-weight:700; margin-bottom:4px;">Test Raporunu Aç</div>
-                                  <div style="font-size:13px; color:#475569;">Detaylı test sonuçları, senaryolar ve adımlar</div>
+                              <td style="padding-bottom:10px;">
+                                <a href="${{ steps.run_links.outputs.report_url }}" 
+                                   style="display:block; text-decoration:none; background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:12px; color:#1d4ed8;">
+                                  <b>Allure Raporunu Aç</b><br>
+                                  <span style="font-size:12px;">Detaylı test sonuçları</span>
                                 </a>
                               </td>
                             </tr>
+
                             <tr>
-                              <td style="padding-bottom:12px;">
-                                <a href="${{ steps.run_links.outputs.video_url }}" style="display:block; text-decoration:none; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:14px; padding:16px 18px; color:#15803d;">
-                                  <div style="font-size:17px; font-weight:700; margin-bottom:4px;">Test Videosunu Aç</div>
-                                  <div style="font-size:13px; color:#475569;">Koşu videosunu web üzerinden izleyin</div>
+                              <td>
+                                <a href="${{ steps.run_links.outputs.video_url }}" 
+                                   style="display:block; text-decoration:none; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px; color:#15803d;">
+                                  <b>Test Videosunu Aç</b><br>
+                                  <span style="font-size:12px;">Koşu videosu</span>
                                 </a>
                               </td>
                             </tr>
+
                           </table>
 
-                          <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:12px; padding:14px 16px; font-size:13px; color:#9a3412; line-height:1.6;">
-                            Not: GitHub Pages yayını bazen birkaç saniye gecikmeli açılabilir. Workflow, mail göndermeden önce linkleri kontrol eder; çok nadir durumlarda kısa bir bekleme sonrası tekrar denemek gerekebilir.
-                          </div>
                         </td>
                       </tr>
 
+                      <!-- FOOTER -->
                       <tr>
-                        <td style="padding:18px 32px; background:#f8fafc; color:#64748b; font-size:12px; text-align:center; border-top:1px solid #e5e7eb;">
-                          <div>Tatilbudur Mobil Test Otomasyonu</div>
-                          <div style="margin-top:4px;">Branch: <b>${{ github.ref_name }}</b></div>
+                        <td style="padding:14px; background:#f8fafc; font-size:11px; text-align:center; color:#64748b;">
+                          Tatilbudur Mobil Test Otomasyonu<br>
+                          Branch: <b>${{ github.ref_name }}</b>
                         </td>
                       </tr>
+
                     </table>
+
                   </td>
                 </tr>
               </table>
