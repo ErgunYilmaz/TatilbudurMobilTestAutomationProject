@@ -357,7 +357,24 @@ jobs:
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "Tatilbudur Mobil Test Raporu - Run #${{ github.run_number }}"
-          to: "ergun.yilmaz@tatilbudur.com"
+          to: "ergun.yilmaz@tatilbudur.com,
+                nazmi.ozer@tatilbudur.com,
+                erhan.isler@tatilbudur.com,
+                letafet.erol@tatilbudur.com,
+                kadir.akar@tatilbudur.com,
+                abdullah.demirel@tatilbudur.com,
+                berat.topcu@tatilbudur.com,
+                isil.ozatik@tatilbudur.com,
+                can.atalan@tatilbudur.com,
+                samet.aydin@tatilbudur.com,
+                huseyin.eraslan@tatilbudur.com,
+                bahar.yildiz@tatilbudur.com,
+                yaren.yilmaz@tatilbudur.com,
+                omer.balkan@tatilbudur.com,
+                turkunay.bas@tatilbudur.com,
+                muhammed.yazici@tatilbudur.com,
+                sude.sevim@tatilbudur.com"
+
 
           from: "Test Automation <${{ secrets.EMAIL_USERNAME }}>"
           html_body: |
@@ -459,7 +476,7 @@ jobs:
                               <td style="padding-bottom:10px;">
                                 <a href="${{ steps.run_links.outputs.report_url }}" 
                                    style="display:block; text-decoration:none; background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:12px; color:#1d4ed8;">
-                                  <b>Allure Raporunu Aç</b><br>
+                                  <b>Test Raporunu Aç</b><br>
                                   <span style="font-size:12px;">Detaylı test sonuçları</span>
                                 </a>
                               </td>
