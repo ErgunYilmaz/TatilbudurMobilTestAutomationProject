@@ -66,4 +66,4 @@ Feature: Otel rezervasyon tamamlama senaryolari
 
     Examples:
       | otelSehirBolgeTema | girisGunSonra | cikisGunSonra | ad1 | soyad1 | tc1         | telefon      | eposta       | gun1 | ay1  | yil1 | ad2  | soyad2 | gun2 | ay2   | yil2 | kartIsim  | kartNo           |   cvv |
-      | Antalya            | 30            | 33            | Ali | Kaya   | 11111111111 | 5555555555 | ali@test.com | 5    | Mart | 2008 | Ayse | Kaya   | 6    | Nisan | 2008   | Ali Kaya   |  4000300020001000   |   123 |
+      | Antalya            | 10            | 14            | Ali | Kaya   | 11111111111 | 5555555555 | ali@test.com | 5    | Mart | 2008 | Ayse | Kaya   | 6    | Nisan | 2008   | Ali Kaya   |  4000300020001000   |   123 |

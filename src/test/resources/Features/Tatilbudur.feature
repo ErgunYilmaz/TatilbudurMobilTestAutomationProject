@@ -1,5 +1,5 @@
 Feature: Otel aratma ve listeyi fiyat(artan)'a gore siralama Uygulamada otel aramasi yapilir ve cikan sonuclar fiyata gore artan sekilde siralanir.
-  @Tb @OtelAratmaVeListeyiFiyatArtanSiralama
+  @OtelAratmaVeListeyiFiyatArtanSiralama
   Scenario: Bodrum otellerini fiyat artan siralama ile listeleme
     Given Cerezler kabul edilir
     And Bildirim izni cikarsa kapatilir
