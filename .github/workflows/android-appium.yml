@@ -357,7 +357,7 @@ jobs:
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "Tatilbudur Mobil Test Raporu - Run #${{ github.run_number }}"
-          to: "ergun.yilmaz@tatilbudur.com,erhan.isler@tatilbudur.com,letafet.erol@tatilbudur.com,kadir.akar@tatilbudur.com,abdullah.demirel@tatilbudur.com,berat.topcu@tatilbudur.com,isil.ozatik@tatilbudur.com,can.atalan@tatilbudur.com,samet.aydin@tatilbudur.com,huseyin.eraslan@tatilbudur.com,bahar.yildiz@tatilbudur.com,yaren.yilmaz@tatilbudur.com,omer.balkan@tatilbudur.com,turkunay.bas@tatilbudur.com,muhammed.yazici@tatilbudur.com,sude.sevim@tatilbudur.com"
+          to: "ergun.yilmaz@tatilbudur.com,omer.balkan@tatilbudur.com,turkunay.bas@tatilbudur.com"
           from: "Test Automation <${{ secrets.EMAIL_USERNAME }}>"
           html_body: |
             <!DOCTYPE html>
