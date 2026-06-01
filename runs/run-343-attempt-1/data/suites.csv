@@ -1,0 +1,8 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","154391","Otel rezervasyonu alip odeme ile tamamla ve rezervasyon numarasini kaydet","","2026-06-01","skipped","2026-06-01","","Otel rezervasyon tamamlama senaryolari","Otel rezervasyonu alip odeme ile tamamla ve rezervasyon numarasini kaydet",""
+"  Uygulamada otel ve tur aramasi yapilir, sonuclar farkli kriterlere göre filtrelenir ve siralanir.
+  Ayrica detay sayfalari ve buton kontrolleri dogrulanir.","162183","Otelleri filtrelenen siralamaya gore listeleme","","2026-06-01","passed","2026-06-01","","Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri","Otelleri filtrelenen siralamaya gore listeleme",""
+"  Uygulamada otel ve tur aramasi yapilir, sonuclar farkli kriterlere göre filtrelenir ve siralanir.
+  Ayrica detay sayfalari ve buton kontrolleri dogrulanir.","231009","Otelleri filtrelenen siralamaya gore listeleme","","2026-06-01","passed","2026-06-01","","Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri","Otelleri filtrelenen siralamaya gore listeleme",""
+"  Uygulamada otel ve tur aramasi yapilir, sonuclar farkli kriterlere göre filtrelenir ve siralanir.
+  Ayrica detay sayfalari ve buton kontrolleri dogrulanir.","378503","Otelleri filtrelenen siralamaya gore listeleme","","2026-06-01","passed","2026-06-01","","Otel ve Tur Arama - Listeleme, Filtreleme ve Detay Kontrolleri","Otelleri filtrelenen siralamaya gore listeleme",""
