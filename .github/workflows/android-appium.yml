@@ -107,7 +107,7 @@ jobs:
             sleep 3
 
             echo "Test başlıyor"
-            mvn -B --no-transfer-progress clean test || true
+            mvn -B --no-transfer-progress clean test; echo $? > test-exit-code.txt
 
             echo "Video kaydı durduruluyor"
             adb shell pkill -INT screenrecord || true
@@ -357,7 +357,7 @@ jobs:
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: "Tatilbudur Mobil Test Raporu - Run #${{ github.run_number }}"
-          to: "ergun.yilmaz@tatilbudur.com"
+          to: "dummy@example.com"
           from: "Test Automation <${{ secrets.EMAIL_USERNAME }}>"
           html_body: |
             <!DOCTYPE html>
@@ -494,3 +494,17 @@ jobs:
               </table>
             </body>
             </html>
+
+      - name: Test sonucunu kontrol et
+        if: always()
+        run: |
+          if [ ! -f test-exit-code.txt ]; then
+            echo "::error::Testler çalışmadı (test-exit-code.txt bulunamadı)."
+            exit 1
+          fi
+          CODE=$(cat test-exit-code.txt)
+          if [ "$CODE" != "0" ]; then
+            echo "::error::Maven testleri başarısız oldu (exit code: $CODE). Detaylar için Allure raporuna bakın."
+            exit 1
+          fi
+          echo "Tüm testler başarılı."
