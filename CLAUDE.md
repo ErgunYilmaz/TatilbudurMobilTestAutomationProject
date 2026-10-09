@@ -38,7 +38,7 @@ Flow: `src/test/resources/Features/*.feature` (Gherkin) → `stepDefinitions/*` 
 
 ## CI (`.github/workflows/android-appium.yml`)
 
-- Triggers: push to `main`, manual dispatch, and 4 daily crons (UTC, mapped to TR times in comments).
+- Triggers: manual dispatch only (`workflow_dispatch`). The push and daily cron triggers were removed on purpose.
 - Steps: downloads the APK from GitHub release tag `apk-v1`, starts Appium, then runs `mvn clean test` inside an API 30 `pixel_4` emulator with screen recording.
 - The Maven exit code is saved to `test-exit-code.txt` instead of failing immediately, so video, report and mail steps still run. The last step (`Test sonucunu kontrol et`) fails the job if that code is non-zero or the file is missing. `android-emulator-runner` runs each `script:` line in a separate shell, so shell variables do not carry over between lines; use files for that.
 - After the run it generates Allure, publishes the report and video to `gh-pages` under `runs/run-<n>-attempt-<m>/`, and emails a summary to the team via SMTP secrets `EMAIL_USERNAME`/`EMAIL_PASSWORD`.
