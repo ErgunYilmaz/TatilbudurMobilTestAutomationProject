@@ -35,7 +35,7 @@ build/
 allure-results/
 allure-report/
 
-App binaries
+# App binaries
 Apps/*.apk
 *.apk
 
